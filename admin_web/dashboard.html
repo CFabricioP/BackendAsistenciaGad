@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Administración</title>
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/sweetalert2.min.css">
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --primary-dark: #0284c7;
+      --primary-light: #e0f2fe;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #8b5cf6;
+      --purple-light: #ede9fe;
+      --orange: #f97316;
+      --orange-light: #ffedd5;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #94a3b8;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .main-container {
+      height: 100vh;
+      display: flex;
+    }
+
+    .page-content {
+      flex: 1;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    .full-box.navbar-info {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .page-header-custom {
+      padding: 18px 24px 10px;
+      flex-shrink: 0;
+    }
+
+    .page-header-custom h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 2px;
+    }
+
+    .page-header-custom p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px 30px;
+    }
+
+    .scroll-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .scroll-area::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 10px;
+    }
+
+    /* ── KPI GRID ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-top: 4px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      padding: 18px 16px;
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform .2s, box-shadow .2s;
+      animation: fadeUp .35s ease both;
+    }
+
+    .kpi-card:nth-child(2) {
+      animation-delay: .05s;
+    }
+
+    .kpi-card:nth-child(3) {
+      animation-delay: .10s;
+    }
+
+    .kpi-card:nth-child(4) {
+      animation-delay: .15s;
+    }
+
+    .kpi-card:nth-child(5) {
+      animation-delay: .20s;
+    }
+
+    .kpi-card:nth-child(6) {
+      animation-delay: .25s;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .1);
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .kpi-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .kpi-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    /* colores por KPI */
+    .kpi-blue {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .kpi-green {
+      background: #d1fae5;
+      color: var(--success);
+    }
+
+    .kpi-purple {
+      background: var(--purple-light);
+      color: var(--purple);
+    }
+
+    .kpi-orange {
+      background: var(--orange-light);
+      color: var(--orange);
+    }
+
+    .kpi-yellow {
+      background: #fef3c7;
+      color: var(--warning);
+    }
+
+    .kpi-red {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    /* ── TABLES GRID ── */
+    .tables-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeUp .4s ease both;
+    }
+
+    .form-card:nth-child(2) {
+      animation-delay: .08s;
+    }
+
+    .form-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1.5px solid var(--border);
+      background: #fafbfc;
+    }
+
+    .icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .icon-box.green {
+      background: #d1fae5;
+      color: var(--success);
+    }
+
+    .icon-box.yellow {
+      background: #fef3c7;
+      color: var(--warning);
+    }
+
+    .form-card-header h6 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0;
+      color: var(--text);
+    }
+
+    .form-card-header small {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+    }
+
+    .form-card-body {
+      padding: 0;
+    }
+
+    /* TABLE */
+    .dash-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .dash-table thead th {
+      background: #1e293b !important;
+      color: #fff !important;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: left;
+      border: none !important;
+    }
+
+    .dash-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+
+    .dash-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .dash-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .dash-table tbody td {
+      padding: 10px 14px;
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    .badge-hora {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-evento {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #fef3c7;
+      color: var(--warning);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .empty-row td {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 20px !important;
+    }
+
+    i {
+      transform: none !important;
+      filter: none !important;
+    }
+
+    @media (max-width: 768px) {
+
+      html,
+      body {
+        overflow: auto;
+      }
+
+      .page-content {
+        overflow: auto;
+        height: auto;
+      }
+
+      .scroll-area {
+        overflow: visible;
+      }
+
+      .tables-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="full-box main-container">
+
+    <!-- NAV LATERAL -->
+    <section class="full-box nav-lateral">
+      <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+      <div class="full-box nav-lateral-content">
+        <figure class="full-box nav-lateral-avatar">
+          <i class="far fa-times-circle show-nav-lateral"></i>
+          <img src="./assets/avatar/Avatar2.png" class="img-fluid" alt="Avatar">
+          <figcaption class="roboto-medium text-center">
+            Administrador <br><small class="roboto-condensed-light">Panel</small>
+          </figcaption>
+        </figure>
+        <div class="full-box nav-lateral-bar"></div>
+        <nav class="full-box nav-lateral-menu">
+          <ul>
+            <li><a class="active" href="dashboard.html"><i class="fab fa-dashcube fa-fw"></i> &nbsp; Dashboard</a></li>
+            <li><a href="empleados-new.html"><i class="fas fa-user-friends fa-fw"></i> &nbsp; Empleados</a></li>
+            <li><a href="horario-new.html"><i class="fas fa-file-alt fa-fw"></i> &nbsp; Horarios</a></li>
+            <li><a href="roles-cargos-new.html"><i class="fas fa-user-tag fa-fw"></i> &nbsp; Roles y Cargos</a></li>
+            <li><a href="lugares-new.html"><i class="fas fa-map-marked-alt fa-fw"></i> &nbsp; Lugares</a></li>
+            <li><a href="notificaciones.html"><i class="fas fa-bell fa-fw"></i> &nbsp; Notificaciones</a></li>
+            <li><a href="eventos-crear.html"><i class="fas fa-calendar-check fa-fw"></i> &nbsp; Eventos y
+                Asignaciones</a></li>
+            <li><a href="reportes.html"><i class="fas fa-file-alt fa-fw"></i> &nbsp; Reportes diarios</a></li>
+          </ul>
+        </nav>
+      </div>
+    </section>
+
+    <!-- CONTENIDO -->
+    <section class="full-box page-content">
+      <nav class="full-box navbar-info">
+        <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+        <a href="#" onclick="cerrarSesion()"><i class="fas fa-power-off"></i></a>
+      </nav>
+
+      <div class="page-header-custom">
+        <h3><i class="fab fa-dashcube fa-fw"></i> &nbsp; Panel de Administración</h3>
+        <p>Bienvenido. Gestiona lugares, empleados, eventos y reportes del sistema.</p>
+      </div>
+
+      <div class="scroll-area">
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+
+          <a href="lugares-new.html" class="kpi-card">
+            <div class="kpi-icon kpi-blue"><i class="fas fa-map-marked-alt"></i></div>
+            <div>
+              <div class="kpi-label">Lugares</div>
+              <div class="kpi-value" id="kpi-lugares">—</div>
+            </div>
+          </a>
+
+          <a href="empleados-list.html" class="kpi-card">
+            <div class="kpi-icon kpi-green"><i class="fas fa-user-friends"></i></div>
+            <div>
+              <div class="kpi-label">Empleados</div>
+              <div class="kpi-value" id="kpi-empleados">—</div>
+            </div>
+          </a>
+          <a href="eventos-crear.html" class="kpi-card">
+            <div class="kpi-icon kpi-yellow"><i class="fas fa-calendar-check"></i></div>
+            <div>
+              <div class="kpi-label">Eventos</div>
+              <div class="kpi-value" id="kpi-eventos">—</div>
+            </div>
+          </a>
+
+          <a href="reportes.html" class="kpi-card">
+            <div class="kpi-icon kpi-purple"><i class="fas fa-file-alt"></i></div>
+            <div>
+              <div class="kpi-label">Asistencias hoy</div>
+              <div class="kpi-value" id="kpi-asistencias-hoy">—</div>
+            </div>
+          </a>
+
+          <a href="notificaciones.html" class="kpi-card">
+            <div class="kpi-icon kpi-orange"><i class="fas fa-bell"></i></div>
+            <div>
+              <div class="kpi-label">Notificaciones</div>
+              <div class="kpi-value" id="kpi-notificaciones">—</div>
+            </div>
+          </a>
+        </div>
+
+        <!-- TABLAS -->
+        <div class="tables-grid">
+
+          <!-- Últimas entradas -->
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="icon-box green"><i class="fas fa-sign-in-alt"></i></div>
+              <div>
+                <h6>Últimas entradas de hoy</h6>
+                <small>Registros de asistencia del día</small>
+              </div>
+            </div>
+            <div class="form-card-body">
+              <table class="dash-table" id="tablaEntradas">
+                <thead>
+                  <tr>
+                    <th>Hora</th>
+                    <th>Empleado</th>
+                    <th>Lugar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="empty-row">
+                    <td colspan="3"><i class="fas fa-circle-notch fa-spin"></i> Cargando...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Próximos eventos -->
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="icon-box yellow"><i class="fas fa-calendar-week"></i></div>
+              <div>
+                <h6>Próximos eventos</h6>
+                <small>Eventos de los próximos 7 días</small>
+              </div>
+            </div>
+            <div class="form-card-body">
+              <table class="dash-table" id="tablaEventosDash">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Titulo</th>
+                    <th>Hora</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="empty-row">
+                    <td colspan="3"><i class="fas fa-circle-notch fa-spin"></i> Cargando...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/jquery-3.4.1.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+  <script src="js/bootstrap-material-design.min.js"></script>
+  <script>$(document).ready(function () { $('body').bootstrapMaterialDesign(); });</script>
+  <script src="js/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+  <script src="js/logout.js"></script>
+  <script src="js/admin-api.js"></script>
+  <script src="js/dashboard.js"></script>
+
+</body>
+
+</html>

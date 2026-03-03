@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportes de Asistencia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary:       #0ea5e9;
+      --primary-dark:  #0284c7;
+      --primary-light: #e0f2fe;
+      --success:       #10b981;
+      --success-dark:  #059669;
+      --danger:        #ef4444;
+      --danger-light:  #fee2e2;
+      --warning:       #f59e0b;
+      --purple:        #8b5cf6;
+      --purple-light:  #ede9fe;
+      --bg:            #f1f5f9;
+      --surface:       #ffffff;
+      --border:        #e2e8f0;
+      --text:          #1e293b;
+      --muted:         #94a3b8;
+      --radius:        14px;
+      --shadow:        0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      height: 100%; overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+
+    .main-container { height: 100vh; display: flex; }
+    .page-content { flex: 1; height: 100vh; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); }
+
+    .full-box.navbar-info {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 20px; height: 52px; display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .page-header-custom { padding: 18px 24px 10px; }
+    .page-header-custom h3 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--text); margin: 0 0 2px; }
+    .page-header-custom p { font-size: 13px; color: var(--muted); margin: 0; }
+
+    .scroll-area { flex: 1; overflow-y: auto; padding: 0 24px 30px; }
+    .scroll-area::-webkit-scrollbar { width: 6px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    /* NAV TABS */
+    .nav-tabs-custom { display: flex; gap: 8px; margin-bottom: 20px; padding-top: 4px; flex-wrap: wrap; }
+    .nav-tab-btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px;
+      border-radius: 10px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      text-decoration: none; transition: all .2s; border: 1.5px solid var(--border);
+      background: var(--surface); color: var(--muted); cursor: pointer;
+    }
+    .nav-tab-btn:hover { color: var(--primary); border-color: var(--primary); text-decoration: none; }
+    .nav-tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 14px rgba(14,165,233,.3); }
+
+    /* TAB PANELS */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* KPI CARDS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    @media (max-width: 768px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+
+    .kpi-card {
+      background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border);
+      padding: 16px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px;
+      animation: fadeUp .35s ease both;
+    }
+    .kpi-card:nth-child(2) { animation-delay: .06s; }
+    .kpi-card:nth-child(3) { animation-delay: .12s; }
+    .kpi-card:nth-child(4) { animation-delay: .18s; }
+
+    .kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .kpi-icon.blue   { background: var(--primary-light); color: var(--primary); }
+    .kpi-icon.green  { background: #d1fae5; color: var(--success); }
+    .kpi-icon.amber  { background: #fef3c7; color: var(--warning); }
+    .kpi-icon.purple { background: var(--purple-light); color: var(--purple); }
+    .kpi-icon.red    { background: var(--danger-light); color: var(--danger); }
+
+    .kpi-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 2px; }
+    .kpi-value { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--text); }
+
+    /* FILTER CARD */
+    .filter-card {
+      background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border);
+      margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow); animation: fadeUp .35s ease both;
+    }
+    .filter-card-header { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1.5px solid var(--border); background: #fafbfc; }
+    .filter-card-body { padding: 16px 20px; }
+
+    .icon-box { width: 34px; height: 34px; border-radius: 9px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    .icon-box.amber  { background: #fef3c7; color: var(--warning); }
+    .icon-box.purple { background: var(--purple-light); color: var(--purple); }
+    .filter-card-header h6 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin: 0; color: var(--text); }
+    .filter-card-header small { font-size: 12px; color: var(--muted); display: block; }
+
+    .filters-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: end; }
+    @media (max-width: 1100px) { .filters-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 992px)  { .filters-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 576px)  { .filters-grid { grid-template-columns: 1fr; } }
+
+    .field-group { margin: 0; }
+    .field-group label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+    .field-group input,
+    .field-group select {
+      width: 100%; height: 42px; border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 0 14px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+      color: var(--text); background: var(--surface);
+      transition: border-color .2s, box-shadow .2s; outline: none; appearance: none;
+    }
+    .field-group input:focus,
+    .field-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14,165,233,.12); }
+
+    .btn-filter {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; border: none; border-radius: 10px; height: 42px; padding: 0 20px;
+      font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 14px rgba(14,165,233,.35); width: 100%;
+    }
+    .btn-filter:hover { transform: translateY(-1px); }
+    .btn-filter:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .btn-clear {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      background: transparent; color: var(--muted); border: 1.5px solid var(--border);
+      border-radius: 10px; height: 42px; padding: 0 20px;
+      font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: border-color .2s, color .2s; width: 100%;
+    }
+    .btn-clear:hover { border-color: var(--muted); color: var(--text); }
+
+    /* LIST CARD */
+    .list-card {
+      background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border);
+      overflow: hidden; box-shadow: var(--shadow); animation: fadeUp .4s ease both; animation-delay: .1s;
+    }
+    .list-card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1.5px solid var(--border); background: #fafbfc; flex-wrap: wrap; gap: 10px; }
+    .list-card-header-left { display: flex; align-items: center; gap: 10px; }
+    .list-card-header h6 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin: 0; color: var(--text); }
+    .list-card-header small { font-size: 12px; color: var(--muted); display: block; }
+    .list-card-body { padding: 16px 20px; }
+    .list-card-header-right { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn-csv {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--success); color: #fff; border: none; border-radius: 9px; padding: 8px 16px;
+      font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: background .2s, transform .15s;
+      box-shadow: 0 3px 10px rgba(16,185,129,.3);
+    }
+    .btn-csv:hover { background: var(--success-dark); transform: translateY(-1px); }
+
+    /* TABLE */
+    #tablaReportes, #tablaResumen { width: 100%; border-collapse: collapse; font-size: 13px; }
+    #tablaReportes thead th, #tablaResumen thead th {
+      background: #1e293b !important; color: #fff !important;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px;
+      letter-spacing: .06em; text-transform: uppercase; padding: 11px 14px;
+      text-align: center; border: none !important;
+    }
+    .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #tablaReportes thead th:first-child, #tablaResumen thead th:first-child { border-radius: 8px 0 0 8px; }
+    #tablaReportes thead th:last-child,  #tablaResumen thead th:last-child  { border-radius: 0 8px 8px 0; }
+    #tablaReportes tbody tr, #tablaResumen tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    #tablaReportes tbody tr:hover, #tablaResumen tbody tr:hover { background: #f8fafc; }
+    #tablaReportes tbody td, #tablaResumen tbody td { padding: 10px 14px; vertical-align: middle; text-align: center; color: var(--text); }
+
+    /* BADGES */
+    .fecha-badge  { display: inline-flex; align-items: center; gap: 5px; background: var(--primary-light); color: var(--primary); border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
+    .hora-badge   { display: inline-flex; align-items: center; gap: 5px; background: #d1fae5; color: var(--success); border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
+    .hora-badge.salida { background: #fef3c7; color: var(--warning); }
+    .tipo-diaria  { display: inline-flex; align-items: center; gap: 5px; background: #d1fae5; color: #065f46; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+    .tipo-evento  { display: inline-flex; align-items: center; gap: 5px; background: var(--purple-light); color: #5b21b6; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+    .dur-badge    { background: #f1f5f9; color: var(--text); border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 600; font-family: monospace; }
+    .badge-warn   { display: inline-flex; align-items: center; gap: 4px; background: #fef3c7; color: #92400e; border-radius: 20px; padding: 3px 9px; font-size: 11px; font-weight: 700; }
+    .badge-danger { display: inline-flex; align-items: center; gap: 4px; background: var(--danger-light); color: #991b1b; border-radius: 20px; padding: 3px 9px; font-size: 11px; font-weight: 700; }
+    .badge-ok     { display: inline-flex; align-items: center; gap: 4px; background: #d1fae5; color: #065f46; border-radius: 20px; padding: 3px 9px; font-size: 11px; font-weight: 700; }
+    .badge-muted  { display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; color: var(--muted); border-radius: 20px; padding: 3px 9px; font-size: 11px; font-weight: 600; }
+
+    /* ACTION BUTTONS */
+    .btn-action {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 8px; border: none;
+      cursor: pointer; transition: all .15s; font-size: 13px;
+    }
+    .btn-action.view   { background: var(--primary-light); color: var(--primary); }
+    .btn-action.view:hover   { background: var(--primary); color: #fff; }
+    .btn-action.delete { background: var(--danger-light); color: var(--danger); }
+    .btn-action.delete:hover { background: var(--danger); color: #fff; }
+    .actions-cell { display: flex; gap: 6px; justify-content: center; }
+
+    .empty-state { padding: 40px 20px; text-align: center; color: var(--muted); }
+    .empty-state i { font-size: 32px; margin-bottom: 10px; display: block; }
+
+    /* DataTables override */
+    .dataTables_wrapper .dataTables_filter input { border: 1.5px solid var(--border); border-radius: 9px; padding: 6px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; }
+    .dataTables_wrapper .dataTables_filter input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14,165,233,.1); }
+    .dataTables_wrapper .dataTables_length select { border: 1.5px solid var(--border); border-radius: 9px; padding: 5px 10px; font-family: 'DM Sans', sans-serif; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button { border-radius: 8px !important; font-family: 'DM Sans', sans-serif; font-size: 13px; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: var(--primary) !important; color: #fff !important; border: none !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover { background: var(--primary-light) !important; color: var(--primary) !important; border: none !important; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--surface); border-radius: 18px; width: 100%; max-width: 620px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18); overflow: hidden;
+      transform: translateY(20px); transition: transform .25s ease;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1.5px solid var(--border); background: #fafbfc; }
+    .modal-header h5 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; margin: 0; color: var(--text); }
+    .modal-close { background: none; border: none; font-size: 18px; color: var(--muted); cursor: pointer; transition: color .15s; }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 20px 24px; max-height: 70vh; overflow-y: auto; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .detail-grid { grid-template-columns: 1fr; } }
+    .detail-item { background: #f8fafc; border-radius: 10px; padding: 12px 14px; }
+    .detail-item label { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; display: block; margin-bottom: 4px; }
+    .detail-item span  { font-size: 14px; font-weight: 600; color: var(--text); }
+    .detail-item.full  { grid-column: 1 / -1; }
+    .modal-footer { padding: 14px 24px; border-top: 1.5px solid var(--border); display: flex; justify-content: flex-end; }
+    .btn-modal-close {
+      background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 9px 20px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      color: var(--text); cursor: pointer; transition: border-color .15s;
+    }
+    .btn-modal-close:hover { border-color: var(--muted); }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    i { transform: none !important; filter: none !important; }
+
+    @media (max-width: 768px) {
+      html, body { overflow: auto; }
+      .page-content { overflow: auto; height: auto; }
+      .scroll-area { overflow: visible; }
+    }
+  </style>
+</head>
+
+<body>
+<main class="full-box main-container">
+
+  <section class="full-box nav-lateral">
+    <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+    <div class="full-box nav-lateral-content">
+      <figure class="full-box nav-lateral-avatar">
+        <i class="far fa-times-circle show-nav-lateral"></i>
+        <img src="assets/avatar/Avatar2.png" class="img-fluid" alt="Avatar">
+        <figcaption class="roboto-medium text-center">
+          Administrador <br><small class="roboto-condensed-light">Gestión</small>
+        </figcaption>
+      </figure>
+      <nav class="full-box nav-lateral-menu">
+        <ul>
+          <li><a href="dashboard.html"><i class="fab fa-dashcube fa-fw"></i> &nbsp; Dashboard</a></li>
+          <li><a href="empleados-new.html"><i class="fas fa-user-plus fa-fw"></i> &nbsp; Nuevo Empleado</a></li>
+          <li><a href="empleados-list.html"><i class="fas fa-users fa-fw"></i> &nbsp; Lista Empleados</a></li>
+          <li><a href="eventos-list.html"><i class="fas fa-calendar-plus fa-fw"></i> &nbsp; Eventos</a></li>
+          <li><a href="lugares-list.html"><i class="fas fa-map-marked-alt fa-fw"></i> &nbsp; Lugares</a></li>
+          <li><a href="notificaciones.html"><i class="fas fa-bell fa-fw"></i> &nbsp; Notificaciones</a></li>
+          <li><a class="active" href="reportes.html"><i class="fas fa-file-alt fa-fw"></i> &nbsp; Reportes</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <section class="full-box page-content">
+    <nav class="full-box navbar-info">
+      <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+      <a href="#" onclick="cerrarSesion()"><i class="fas fa-power-off"></i></a>
+    </nav>
+
+    <div class="page-header-custom">
+      <h3><i class="fas fa-chart-bar fa-fw"></i> &nbsp; Reportes de Asistencia</h3>
+      <p>Filtra por fecha, empleado y evento. Revisa entradas/salidas, exporta a CSV.</p>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- TABS -->
+      <div class="nav-tabs-custom">
+        <button class="nav-tab-btn active" data-tab="detalle">
+          <i class="fas fa-table"></i> Detalle por Registro
+        </button>
+        <button class="nav-tab-btn" data-tab="resumen">
+          <i class="fas fa-users"></i> Resumen por Empleado
+        </button>
+      </div>
+
+      <!-- ===== TAB: DETALLE ===== -->
+      <div class="tab-panel active" id="tab-detalle">
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon blue"><i class="fas fa-list-ol"></i></div>
+            <div><div class="kpi-label">Total Registros</div><div class="kpi-value" id="kpi-total">0</div></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon green"><i class="fas fa-clock"></i></div>
+            <div><div class="kpi-label">Total Horas</div><div class="kpi-value" id="sum-horas">0</div></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon amber"><i class="fas fa-exclamation-triangle"></i></div>
+            <div><div class="kpi-label">Tardanzas</div><div class="kpi-value" id="kpi-tardanzas">0</div></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon red"><i class="fas fa-sign-out-alt"></i></div>
+            <div><div class="kpi-label">Sal. Anticipadas</div><div class="kpi-value" id="kpi-anticipadas">0</div></div>
+          </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="filter-card">
+          <div class="filter-card-header">
+            <div class="icon-box amber"><i class="fas fa-filter"></i></div>
+            <div><h6>Filtros</h6><small>Filtra por rango de fechas, empleado y/o evento</small></div>
+          </div>
+          <div class="filter-card-body">
+            <div class="filters-grid">
+              <div class="field-group">
+                <label>Desde</label>
+                <input type="date" id="desde">
+              </div>
+              <div class="field-group">
+                <label>Hasta</label>
+                <input type="date" id="hasta">
+              </div>
+              <div class="field-group">
+                <label>Empleado</label>
+                <select id="empleado"><option value="">— Todos —</option></select>
+              </div>
+              <div class="field-group">
+                <label>Evento</label>
+                <select id="evento"><option value="">— Todos —</option></select>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <button type="button" id="filtrar" class="btn-filter">
+                  <i class="fas fa-search"></i> Filtrar
+                </button>
+                <button type="button" id="limpiar" class="btn-clear">
+                  <i class="fas fa-eraser"></i> Limpiar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLA DETALLE -->
+        <div class="list-card">
+          <div class="list-card-header">
+            <div class="list-card-header-left">
+              <div class="icon-box"><i class="fas fa-table"></i></div>
+              <div>
+                <h6>Registros de Asistencia</h6>
+                <small id="total-registros">Cargando...</small>
+              </div>
+            </div>
+            <div class="list-card-header-right">
+              <button id="csv" class="btn-csv">
+                <i class="fas fa-file-csv"></i> Exportar CSV
+              </button>
+            </div>
+          </div>
+          <div class="list-card-body table-responsive">
+            <table id="tablaReportes" style="width:100%">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Empleado</th>
+                  <th>Cédula</th>
+                  <th>Entrada</th>
+                  <th>Salida</th>
+                  <th>Horario</th>
+                  <th>Evento</th>
+                  <th>Duración</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyReportes"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /tab-detalle -->
+
+      <!-- ===== TAB: RESUMEN ===== -->
+      <div class="tab-panel" id="tab-resumen">
+
+        <!-- FILTROS RESUMEN -->
+        <div class="filter-card">
+          <div class="filter-card-header">
+            <div class="icon-box purple"><i class="fas fa-users"></i></div>
+            <div><h6>Resumen por Empleado</h6><small>Filtra por rango de fechas (solo asistencias diarias)</small></div>
+          </div>
+          <div class="filter-card-body">
+            <div class="filters-grid" style="grid-template-columns: repeat(3,1fr);">
+              <div class="field-group">
+                <label>Desde</label>
+                <input type="date" id="res-desde">
+              </div>
+              <div class="field-group">
+                <label>Hasta</label>
+                <input type="date" id="res-hasta">
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <button type="button" id="res-filtrar" class="btn-filter">
+                  <i class="fas fa-search"></i> Filtrar
+                </button>
+                <button type="button" id="res-limpiar" class="btn-clear">
+                  <i class="fas fa-eraser"></i> Limpiar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLA RESUMEN -->
+        <div class="list-card">
+          <div class="list-card-header">
+            <div class="list-card-header-left">
+              <div class="icon-box purple"><i class="fas fa-chart-pie"></i></div>
+              <div>
+                <h6>Resumen por Empleado</h6>
+                <small id="res-total-registros">Cargando...</small>
+              </div>
+            </div>
+            <div class="list-card-header-right">
+              <button id="res-csv" class="btn-csv">
+                <i class="fas fa-file-csv"></i> Exportar CSV
+              </button>
+            </div>
+          </div>
+          <div class="list-card-body table-responsive">
+            <table id="tablaResumen" style="width:100%">
+              <thead>
+                <tr>
+                  <th>Empleado</th>
+                  <th>Cédula</th>
+                  <th>Días Trabajados</th>
+                  <th>Días Completos</th>
+                  <th>Tardanzas</th>
+                  <th>Sal. Anticipadas</th>
+                  <th>Sal. Tardías</th>
+                  <th>Total Horas</th>
+                  <th>Promedio/Día</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyResumen"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /tab-resumen -->
+
+    </div>
+  </section>
+</main>
+
+<!-- ===== MODAL DETALLE ===== -->
+<div class="modal-overlay" id="modalDetalle">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h5><i class="fas fa-id-card"></i> &nbsp; Detalle de Asistencia</h5>
+      <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="modalContent"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-close" id="modalCloseFooter">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="js/bootstrap-material-design.min.js"></script>
+<script>$(document).ready(() => { $('body').bootstrapMaterialDesign(); });</script>
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+<script src="js/logout.js"></script>
+<script src="js/admin-api.js"></script>
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+  // ── Elementos ──
+  const elDesde    = document.getElementById("desde");
+  const elHasta    = document.getElementById("hasta");
+  const elEmpleado = document.getElementById("empleado");
+  const elEvento   = document.getElementById("evento");
+  const btnFiltrar = document.getElementById("filtrar");
+  const btnLimpiar = document.getElementById("limpiar");
+  const btnCSV     = document.getElementById("csv");
+  const tbody      = document.getElementById("tbodyReportes");
+  const totalReg   = document.getElementById("total-registros");
+  const kpiTotal   = document.getElementById("kpi-total");
+  const sumHoras   = document.getElementById("sum-horas");
+  const kpiTard    = document.getElementById("kpi-tardanzas");
+  const kpiAntic   = document.getElementById("kpi-anticipadas");
+
+  const elResDesde  = document.getElementById("res-desde");
+  const elResHasta  = document.getElementById("res-hasta");
+  const btnResFilt  = document.getElementById("res-filtrar");
+  const btnResLimp  = document.getElementById("res-limpiar");
+  const btnResCSV   = document.getElementById("res-csv");
+  const tbodyRes    = document.getElementById("tbodyResumen");
+  const totalResReg = document.getElementById("res-total-registros");
+
+  const modalOverlay    = document.getElementById("modalDetalle");
+  const modalContent    = document.getElementById("modalContent");
+  const modalClose      = document.getElementById("modalClose");
+  const modalCloseFooter = document.getElementById("modalCloseFooter");
+
+  let dtDetalle  = null;
+  let dtResumen  = null;
+  let LAST_ROWS  = [];
+  let LAST_RES   = [];
+  let EMPLEADOS  = [];
+  let EVENTOS    = [];
+
+  // ── Helpers ──
+  const pad2 = n => String(n).padStart(2, "0");
+
+  const durSegISO = (entrada, salida) => {
+    if (!entrada || !salida) return null;
+    const diff = new Date(salida) - new Date(entrada);
+    return diff > 0 ? Math.floor(diff / 1000) : 0;
+  };
+
+  const fmtSeconds = total => {
+    const s = Math.max(0, Math.floor(total || 0));
+    return `${pad2(Math.floor(s / 3600))}:${pad2(Math.floor((s % 3600) / 60))}:${pad2(s % 60)}`;
+  };
+
+  const fmtHora = iso => {
+    if (!iso) return '—';
+    try { return new Date(iso).toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+    catch { return iso; }
+  };
+
+  const fmtFecha = iso => {
+    if (!iso) return '—';
+    try { return new Date(iso).toISOString().slice(0, 10); }
+    catch { return iso; }
+  };
+
+  const ymd = d => d.toISOString().slice(0, 10);
+
+  const nombreEmp = id => {
+    const e = EMPLEADOS.find(x => Number(x.id) === Number(id));
+    return e ? `${e.nombre || ''} ${e.apellido || ''}`.trim() : `ID ${id}`;
+  };
+
+  // ── Tabs ──
+  document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ── Modal ──
+  const openModal = data => {
+    const fmtBool = v => v
+      ? `<span class="badge-warn"><i class="fas fa-exclamation-circle"></i> Sí</span>`
+      : `<span class="badge-ok"><i class="fas fa-check-circle"></i> No</span>`;
+
+    modalContent.innerHTML = `
+      <div class="detail-item"><label>ID</label><span>#${data.id}</span></div>
+      <div class="detail-item"><label>Fecha</label><span>${data.fecha || '—'}</span></div>
+      <div class="detail-item full"><label>Empleado</label><span>${data.empleado_nombre || '—'}</span></div>
+      <div class="detail-item"><label>Cédula</label><span>${data.empleado_cedula || '—'}</span></div>
+      <div class="detail-item"><label>Tipo</label><span>${data.tipo || '—'}</span></div>
+      <div class="detail-item"><label>Entrada</label><span>${fmtHora(data.hora_entrada)}</span></div>
+      <div class="detail-item"><label>Salida</label><span>${fmtHora(data.hora_salida)}</span></div>
+      <div class="detail-item"><label>Sal. Almuerzo</label><span>${fmtHora(data.salida_almuerzo)}</span></div>
+      <div class="detail-item"><label>Reg. Almuerzo</label><span>${fmtHora(data.regreso_almuerzo)}</span></div>
+      <div class="detail-item"><label>Horas Trabajadas</label><span>${data.horas_trabajadas}h ${data.minutos_trabajados}m</span></div>
+      ${data.horario ? `
+        <div class="detail-item"><label>Horario</label><span>${data.horario.nombre}</span></div>
+        <div class="detail-item"><label>Rango Horario</label><span>${data.horario.hora_inicio} – ${data.horario.hora_fin}</span></div>
+      ` : ''}
+      ${data.evento_titulo ? `<div class="detail-item full"><label>Evento</label><span>${data.evento_titulo}</span></div>` : ''}
+      <div class="detail-item"><label>Tardanza</label>${fmtBool(data.tardanza)}</div>
+      <div class="detail-item"><label>Sal. Anticipada</label>${fmtBool(data.salida_anticipada)}</div>
+      ${data.motivo_salida_anticipada ? `<div class="detail-item full"><label>Motivo Sal. Anticipada</label><span>${data.motivo_salida_anticipada}</span></div>` : ''}
+      <div class="detail-item"><label>Sal. Tardía</label>${fmtBool(data.salida_tardia)}</div>
+      <div class="detail-item"><label>Completo</label>${fmtBool(data.completo)}</div>
+    `;
+    modalOverlay.classList.add('open');
+  };
+
+  const closeModal = () => modalOverlay.classList.remove('open');
+  modalClose.addEventListener('click', closeModal);
+  modalCloseFooter.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+
+  // ── Fechas por defecto ──
+  function setDefaultDates() {
+    const now = new Date(), ini = new Date(now);
+    ini.setDate(ini.getDate() - 7);
+    elDesde.value    = localStorage.getItem('reportes:desde')    || ymd(ini);
+    elHasta.value    = localStorage.getItem('reportes:hasta')    || ymd(now);
+    elResDesde.value = localStorage.getItem('reportes:res-desde') || ymd(ini);
+    elResHasta.value = localStorage.getItem('reportes:res-hasta') || ymd(now);
+  }
+
+  function saveFilters() {
+    localStorage.setItem('reportes:desde',      elDesde.value    || '');
+    localStorage.setItem('reportes:hasta',       elHasta.value    || '');
+    localStorage.setItem('reportes:empleadoId',  elEmpleado.value || '');
+    localStorage.setItem('reportes:eventoId',    elEvento.value   || '');
+    localStorage.setItem('reportes:res-desde',   elResDesde.value || '');
+    localStorage.setItem('reportes:res-hasta',   elResHasta.value || '');
+  }
+
+  function buildQS() {
+    const qs = new URLSearchParams();
+    if (elDesde.value)    qs.set('desde',      elDesde.value);
+    if (elHasta.value)    qs.set('hasta',       elHasta.value);
+    if (elEmpleado.value) qs.set('empleadoId',  elEmpleado.value);
+    if (elEvento.value)   qs.set('eventoId',    elEvento.value);
+    return qs.toString();
+  }
+
+  function buildResQS() {
+    const qs = new URLSearchParams();
+    if (elResDesde.value) qs.set('desde', elResDesde.value);
+    if (elResHasta.value) qs.set('hasta', elResHasta.value);
+    return qs.toString();
+  }
+
+  // ── Cargar empleados ──
+  async function cargarEmpleados() {
+    try {
+      const res = await fetch("/api/empleados", { headers: authHeaders() });
+      EMPLEADOS = await res.json();
+      const selPrev = localStorage.getItem('reportes:empleadoId') || '';
+      elEmpleado.innerHTML = `<option value="">— Todos —</option>`;
+      [...EMPLEADOS]
+        .sort((a, b) => (a.apellido || '').localeCompare(b.apellido || ''))
+        .forEach(e => {
+          elEmpleado.add(new Option(
+            `${e.cedula || e.id} - ${e.nombre || ''} ${e.apellido || ''}`.trim(), e.id
+          ));
+        });
+      elEmpleado.value = selPrev;
+    } catch (err) { console.warn("No se pudo cargar empleados:", err); }
+  }
+
+  // ── Cargar eventos ──
+  async function cargarEventos() {
+    try {
+      const res = await fetch("/api/eventos", { headers: authHeaders() });
+      EVENTOS = await res.json();
+      const selPrev = localStorage.getItem('reportes:eventoId') || '';
+      elEvento.innerHTML = `<option value="">— Todos —</option>`;
+      EVENTOS.forEach(e => {
+        elEvento.add(new Option(e.titulo || `Evento #${e.id}`, e.id));
+      });
+      elEvento.value = selPrev;
+    } catch (err) { console.warn("No se pudo cargar eventos:", err); }
+  }
+
+  // ── Render tabla detalle ──
+  function renderTabla(rows) {
+    if (dtDetalle) { dtDetalle.destroy(); dtDetalle = null; }
+    tbody.innerHTML = '';
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><i class="fas fa-inbox"></i>No se encontraron registros.</div></td></tr>`;
+      totalReg.textContent = 'Sin registros';
+      kpiTotal.textContent = '0';
+      sumHoras.textContent = '0';
+      kpiTard.textContent  = '0';
+      kpiAntic.textContent = '0';
+      return;
+    }
+
+    let totalSeg = 0, tardanzas = 0, anticipadas = 0;
+
+    rows.forEach(r => {
+      // Nombre
+      const empNombre = r.empleado_nombre || nombreEmp(r.empleado_id);
+      // Evento: ahora viene directo del backend como evento_titulo
+      const eventoTxt = r.evento_titulo || (r.eventos_id ? `Evento #${r.eventos_id}` : '—');
+      const fecha   = fmtFecha(r.hora_entrada);
+      const horaEnt = fmtHora(r.hora_entrada);
+      const horaSal = r.hora_salida ? fmtHora(r.hora_salida) : '—';
+      const durSeg  = durSegISO(r.hora_entrada, r.hora_salida);
+      if (durSeg) totalSeg += durSeg;
+      if (r.tardanza)          tardanzas++;
+      if (r.salida_anticipada) anticipadas++;
+
+      const tipoBadge = r.tipo === 'diaria'
+        ? `<span class="tipo-diaria"><i class="fas fa-calendar-day"></i> Diaria</span>`
+        : `<span class="tipo-evento"><i class="fas fa-calendar-star"></i> Evento</span>`;
+
+      // Estado flags
+      let estadoBadges = '';
+      if (r.tardanza)          estadoBadges += `<span class="badge-warn"><i class="fas fa-exclamation-triangle"></i> Tardanza</span> `;
+      if (r.salida_anticipada) estadoBadges += `<span class="badge-danger"><i class="fas fa-sign-out-alt"></i> Anticipada</span> `;
+      if (r.salida_tardia)     estadoBadges += `<span class="badge-warn"><i class="fas fa-moon"></i> Tardía</span> `;
+      if (!estadoBadges)       estadoBadges  = `<span class="badge-ok"><i class="fas fa-check"></i> Normal</span>`;
+
+      const horarioTxt = r.horario ? `${r.horario.hora_inicio} – ${r.horario.hora_fin}` : '—';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="fecha-badge"><i class="fas fa-calendar-alt"></i> ${fecha}</span></td>
+        <td>${tipoBadge}</td>
+        <td><strong>${empNombre}</strong></td>
+        <td><span style="font-size:12px;color:var(--muted)">${r.empleado_cedula || '—'}</span></td>
+        <td><span class="hora-badge"><i class="fas fa-sign-in-alt"></i> ${horaEnt}</span></td>
+        <td><span class="hora-badge salida"><i class="fas fa-sign-out-alt"></i> ${horaSal}</span></td>
+        <td><span style="font-size:12px">${horarioTxt}</span></td>
+        <td><span style="font-size:12px">${eventoTxt}</span></td>
+        <td><span class="dur-badge">${durSeg != null ? fmtSeconds(durSeg) : '—'}</span></td>
+        <td>${estadoBadges}</td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn-action view btn-ver" data-id="${r.id}" title="Ver detalle"><i class="fas fa-eye"></i></button>
+            <button class="btn-action delete btn-del" data-id="${r.id}" title="Eliminar"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
+      `;
+      // Guardar datos en el TR para el modal
+      tr.querySelector('.btn-ver').addEventListener('click', () => openModal(r));
+      tr.querySelector('.btn-del').addEventListener('click', () => eliminarRegistro(r.id));
+      tbody.appendChild(tr);
+    });
+
+    const n = rows.length;
+    totalReg.textContent = `${n} registro${n !== 1 ? 's' : ''} encontrado${n !== 1 ? 's' : ''}`;
+    kpiTotal.textContent = n;
+    sumHoras.textContent = `${Math.floor(totalSeg / 3600)}h ${Math.floor((totalSeg % 3600) / 60)}m`;
+    kpiTard.textContent  = tardanzas;
+    kpiAntic.textContent = anticipadas;
+
+    dtDetalle = $('#tablaReportes').DataTable({
+      paging: true, searching: true, ordering: true, autoWidth: false,
+      columnDefs: [{ orderable: false, targets: 10 }],
+      language: {
+        search: "Buscar:", lengthMenu: "Mostrar _MENU_ registros",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+        paginate: { previous: "Anterior", next: "Siguiente" },
+        zeroRecords: "No se encontraron resultados"
+      }
+    });
+  }
+
+  // ── Render tabla resumen ──
+  function renderResumen(rows) {
+    if (dtResumen) { dtResumen.destroy(); dtResumen = null; }
+    tbodyRes.innerHTML = '';
+
+    if (!rows.length) {
+      tbodyRes.innerHTML = `<tr><td colspan="9"><div class="empty-state"><i class="fas fa-inbox"></i>Sin registros para el período.</div></td></tr>`;
+      totalResReg.textContent = 'Sin registros';
+      return;
+    }
+
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${r.nombre || `ID ${r.empleado_id}`}</strong></td>
+        <td><span style="font-size:12px;color:var(--muted)">${r.cedula || '—'}</span></td>
+        <td><span class="dur-badge">${r.dias_trabajados}</span></td>
+        <td><span class="badge-ok">${r.dias_completos}</span></td>
+        <td>${r.tardanzas > 0 ? `<span class="badge-warn">${r.tardanzas}</span>` : '<span class="badge-muted">0</span>'}</td>
+        <td>${r.salidas_anticipadas > 0 ? `<span class="badge-danger">${r.salidas_anticipadas}</span>` : '<span class="badge-muted">0</span>'}</td>
+        <td>${r.salidas_tardias > 0 ? `<span class="badge-warn">${r.salidas_tardias}</span>` : '<span class="badge-muted">0</span>'}</td>
+        <td><span class="dur-badge">${r.total_horas}</span></td>
+        <td><span class="dur-badge">${r.promedio_horas}</span></td>
+      `;
+      tbodyRes.appendChild(tr);
+    });
+
+    const n = rows.length;
+    totalResReg.textContent = `${n} empleado${n !== 1 ? 's' : ''} en el período`;
+
+    dtResumen = $('#tablaResumen').DataTable({
+      paging: true, searching: true, ordering: true, autoWidth: false,
+      language: {
+        search: "Buscar:", lengthMenu: "Mostrar _MENU_ registros",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+        paginate: { previous: "Anterior", next: "Siguiente" },
+        zeroRecords: "No se encontraron resultados"
+      }
+    });
+  }
+
+  // ── Eliminar registro ──
+  async function eliminarRegistro(id) {
+    const confirm = await Swal.fire({
+      title: '¿Eliminar registro?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#ef4444'
+    });
+    if (!confirm.isConfirmed) return;
+    try {
+      const res = await fetch(`/api/asistencias/${id}`, {
+        method: 'DELETE', headers: authHeaders()
+      });
+      if (!res.ok) throw new Error('Error al eliminar');
+      Swal.fire('Eliminado', 'El registro fue eliminado correctamente.', 'success');
+      await cargarTablaYResumen();
+    } catch (err) {
+      Swal.fire('Error', 'No se pudo eliminar el registro.', 'error');
+    }
+  }
+
+  // ── Cargar tabla detalle ──
+  async function cargarTablaYResumen() {
+    saveFilters();
+    const qs = buildQS();
+    btnFiltrar.disabled = true;
+    btnFiltrar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Filtrando...';
+    try {
+      const res  = await fetch(`/api/asistencias/reporte?${qs}`, { headers: authHeaders() });
+      const list = await res.json();
+      LAST_ROWS  = Array.isArray(list) ? list : (list.data || list.rows || []);
+      renderTabla(LAST_ROWS);
+    } catch (err) {
+      console.error('Error al cargar asistencias:', err);
+      LAST_ROWS = [];
+      renderTabla([]);
+      Swal.fire('Error', 'No se pudieron cargar los reportes.', 'error');
+    } finally {
+      btnFiltrar.disabled = false;
+      btnFiltrar.innerHTML = '<i class="fas fa-search"></i> Filtrar';
+    }
+  }
+
+  // ── Cargar resumen por empleado ──
+  async function cargarResumenEmpleado() {
+    saveFilters();
+    const qs = buildResQS();
+    btnResFilt.disabled = true;
+    btnResFilt.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Filtrando...';
+    try {
+      const res  = await fetch(`/api/asistencias/reporte/resumen?${qs}`, { headers: authHeaders() });
+      const list = await res.json();
+      LAST_RES   = Array.isArray(list) ? list : [];
+      renderResumen(LAST_RES);
+    } catch (err) {
+      console.error('Error al cargar resumen:', err);
+      LAST_RES = [];
+      renderResumen([]);
+      Swal.fire('Error', 'No se pudo cargar el resumen.', 'error');
+    } finally {
+      btnResFilt.disabled = false;
+      btnResFilt.innerHTML = '<i class="fas fa-search"></i> Filtrar';
+    }
+  }
+
+  // ── Exportar CSV detalle ──
+  function exportarCSV() {
+    if (!LAST_ROWS.length) { Swal.fire('Sin datos', 'No hay registros para exportar.', 'warning'); return; }
+    const headers = ['Fecha','Tipo','Empleado','Cédula','Entrada','Salida','Horario','Evento','Duración','Tardanza','Sal.Anticipada','Sal.Tardía'];
+    const lines   = [headers.join(',')];
+    LAST_ROWS.forEach(r => {
+      const empNombre = r.empleado_nombre || nombreEmp(r.empleado_id);
+      const eventoTxt = r.evento_titulo || (r.eventos_id ? `Evento #${r.eventos_id}` : '');
+      const durSeg    = durSegISO(r.hora_entrada, r.hora_salida);
+      const horario   = r.horario ? `${r.horario.hora_inicio}-${r.horario.hora_fin}` : '';
+      lines.push([
+        fmtFecha(r.hora_entrada), r.tipo||'', empNombre, r.empleado_cedula||'',
+        fmtHora(r.hora_entrada), r.hora_salida ? fmtHora(r.hora_salida) : '',
+        horario, eventoTxt, durSeg != null ? fmtSeconds(durSeg) : '',
+        r.tardanza ? 'Sí' : 'No', r.salida_anticipada ? 'Sí' : 'No', r.salida_tardia ? 'Sí' : 'No'
+      ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+    });
+    descargarCSV(lines, `reporte_asistencias_${ymd(new Date())}.csv`);
+  }
+
+  // ── Exportar CSV resumen ──
+  function exportarCSVResumen() {
+    if (!LAST_RES.length) { Swal.fire('Sin datos', 'No hay registros para exportar.', 'warning'); return; }
+    const headers = ['Empleado','Cédula','Días Trabajados','Días Completos','Tardanzas','Sal.Anticipadas','Sal.Tardías','Total Horas','Promedio/Día'];
+    const lines   = [headers.join(',')];
+    LAST_RES.forEach(r => {
+      lines.push([
+        r.nombre||`ID ${r.empleado_id}`, r.cedula||'', r.dias_trabajados,
+        r.dias_completos, r.tardanzas, r.salidas_anticipadas, r.salidas_tardias,
+        r.total_horas, r.promedio_horas
+      ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+    });
+    descargarCSV(lines, `resumen_empleados_${ymd(new Date())}.csv`);
+  }
+
+  function descargarCSV(lines, filename) {
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: filename });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 500);
+  }
+
+  // ── Eventos ──
+  btnFiltrar.addEventListener("click", cargarTablaYResumen);
+  btnLimpiar.addEventListener("click", () => {
+    elDesde.value = ''; elHasta.value = ''; elEmpleado.value = ''; elEvento.value = '';
+    ['reportes:desde','reportes:hasta','reportes:empleadoId','reportes:eventoId'].forEach(k => localStorage.removeItem(k));
+    cargarTablaYResumen();
+  });
+  btnCSV.addEventListener("click", exportarCSV);
+
+  btnResFilt.addEventListener("click", cargarResumenEmpleado);
+  btnResLimp.addEventListener("click", () => {
+    elResDesde.value = ''; elResHasta.value = '';
+    ['reportes:res-desde','reportes:res-hasta'].forEach(k => localStorage.removeItem(k));
+    cargarResumenEmpleado();
+  });
+  btnResCSV.addEventListener("click", exportarCSVResumen);
+
+  // ── Init ──
+  setDefaultDates();
+  await Promise.all([cargarEmpleados(), cargarEventos()]);
+  await Promise.all([cargarTablaYResumen(), cargarResumenEmpleado()]);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Asignaciones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary:       #0ea5e9;
+      --primary-dark:  #0284c7;
+      --primary-light: #e0f2fe;
+      --success:       #10b981;
+      --success-dark:  #059669;
+      --danger:        #ef4444;
+      --warning:       #f59e0b;
+      --bg:            #f1f5f9;
+      --surface:       #ffffff;
+      --border:        #e2e8f0;
+      --text:          #1e293b;
+      --muted:         #94a3b8;
+      --radius:        14px;
+      --shadow:        0 4px 24px rgba(0,0,0,0.07);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+    .main-container { height: 100vh; display: flex; }
+    .page-content { flex: 1; height: 100vh; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); }
+    .full-box.navbar-info { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; height: 52px; display: flex; align-items: center; justify-content: space-between; }
+    .page-header-custom { padding: 18px 24px 10px; }
+    .page-header-custom h3 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--text); margin: 0 0 2px; }
+    .page-header-custom p { font-size: 13px; color: var(--muted); margin: 0; }
+    .scroll-area { flex: 1; overflow-y: auto; padding: 0 24px 30px; }
+    .scroll-area::-webkit-scrollbar { width: 6px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    .nav-tabs-custom { display: flex; gap: 8px; margin-bottom: 20px; padding-top: 4px; }
+    .nav-tab-btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; text-decoration: none; transition: all .2s; border: 1.5px solid var(--border); background: var(--surface); color: var(--muted); }
+    .nav-tab-btn:hover { color: var(--primary); border-color: var(--primary); text-decoration: none; }
+    .nav-tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 14px rgba(14,165,233,.3); }
+    .form-card { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border); margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow); animation: fadeUp .35s ease both; }
+    .form-card:nth-child(2) { animation-delay: .07s; }
+    .form-card:nth-child(3) { animation-delay: .14s; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .form-card-header { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1.5px solid var(--border); background: #fafbfc; }
+    .icon-box { width: 34px; height: 34px; border-radius: 9px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+    .icon-box.green  { background: #d1fae5; color: var(--success); }
+    .icon-box.orange { background: #fef3c7; color: var(--warning); }
+    .form-card-header h6 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin: 0; color: var(--text); }
+    .form-card-header small { font-size: 12px; color: var(--muted); display: block; }
+    .form-card-body { padding: 20px; }
+    .field-group { margin-bottom: 16px; }
+    .field-group label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+    .field-group select { width: 100%; height: 42px; border: 1.5px solid var(--border); border-radius: 10px; padding: 0 14px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface); transition: border-color .2s, box-shadow .2s; outline: none; }
+    .field-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14,165,233,.12); }
+
+    /* Divisor "o" */
+    .or-divider { display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+    .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .action-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+
+    .btn-save { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--success), var(--success-dark)); color: #fff; border: none; border-radius: 10px; padding: 10px 24px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: transform .15s, box-shadow .2s, opacity .2s; box-shadow: 0 4px 14px rgba(16,185,129,.35); }
+    .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(16,185,129,.4); }
+    .btn-save:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .btn-group-assign { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, var(--warning), #d97706); color: #fff; border: none; border-radius: 10px; padding: 10px 24px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: transform .15s, box-shadow .2s, opacity .2s; box-shadow: 0 4px 14px rgba(245,158,11,.35); }
+    .btn-group-assign:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,158,11,.4); }
+    .btn-group-assign:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .btn-del { display: inline-flex; align-items: center; gap: 5px; background: var(--danger); color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background .2s; }
+    .btn-del:hover { background: #dc2626; }
+
+    /* Resultado asignación grupal */
+    .result-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+    .result-badge.ok  { background: #d1fae5; color: #059669; }
+    .result-badge.err { background: #fee2e2; color: #dc2626; }
+
+    #tablaAsignaciones { width: 100%; border-collapse: collapse; font-size: 13px; }
+    #tablaAsignaciones thead th { background: #1e293b !important; color: #fff !important; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 11px 14px; text-align: center; border: none !important; }
+    #tablaAsignaciones thead th:first-child { border-radius: 8px 0 0 8px; }
+    #tablaAsignaciones thead th:last-child  { border-radius: 0 8px 8px 0; }
+    #tablaAsignaciones tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    #tablaAsignaciones tbody tr:hover { background: #f8fafc; }
+    #tablaAsignaciones tbody td { padding: 10px 14px; vertical-align: middle; text-align: center; color: var(--text); }
+    .dataTables_wrapper .dataTables_filter input { border: 1.5px solid var(--border); border-radius: 9px; padding: 6px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; }
+    .dataTables_wrapper .dataTables_filter input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14,165,233,.1); }
+    .dataTables_wrapper .dataTables_length select { border: 1.5px solid var(--border); border-radius: 9px; padding: 5px 10px; font-family: 'DM Sans', sans-serif; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button { border-radius: 8px !important; font-family: 'DM Sans', sans-serif; font-size: 13px; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: var(--primary) !important; color: #fff !important; border: none !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover { background: var(--primary-light) !important; color: var(--primary) !important; border: none !important; }
+    i { transform: none !important; filter: none !important; }
+    @media (max-width: 768px) { html, body { overflow: auto; } .page-content { overflow: auto; height: auto; } .scroll-area { overflow: visible; } .btn-save, .btn-group-assign { width: 100%; justify-content: center; } }
+  </style>
+</head>
+
+<body>
+<main class="full-box main-container">
+
+  <section class="full-box nav-lateral">
+    <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+    <div class="full-box nav-lateral-content">
+      <figure class="full-box nav-lateral-avatar">
+        <i class="far fa-times-circle show-nav-lateral"></i>
+        <img src="assets/avatar/Avatar2.png" class="img-fluid" alt="Avatar">
+        <figcaption class="roboto-medium text-center">
+          Administrador <br><small class="roboto-condensed-light">Gestión</small>
+        </figcaption>
+      </figure>
+      <nav class="full-box nav-lateral-menu">
+        <ul>
+          <li><a href="dashboard.html"><i class="fab fa-dashcube fa-fw"></i> &nbsp; Dashboard</a></li>
+          <li><a href="eventos-crear.html"><i class="fas fa-calendar-check fa-fw"></i> &nbsp; Eventos</a></li>
+          <li><a class="active" href="asignaciones.html"><i class="fas fa-user-check fa-fw"></i> &nbsp; Asignaciones</a></li>
+          <li><a href="grupos.html"><i class="fas fa-users fa-fw"></i> &nbsp; Grupos</a></li>
+          <li><a href="empleado-grupos.html"><i class="fas fa-user-friends fa-fw"></i> &nbsp; Asignar a Grupos</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <section class="full-box page-content">
+    <nav class="full-box navbar-info">
+      <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+      <a href="#" onclick="cerrarSesion()"><i class="fas fa-power-off"></i></a>
+    </nav>
+
+    <div class="page-header-custom">
+      <h3><i class="fas fa-user-check fa-fw"></i> &nbsp; Asignaciones del Evento</h3>
+      <p>Asigna empleados individuales o grupos completos a un evento.</p>
+    </div>
+
+    <div class="scroll-area">
+
+      <div class="nav-tabs-custom">
+        <a href="asignaciones.html" class="nav-tab-btn active">
+          <i class="fas fa-user-plus"></i> Asignaciones
+        </a>
+        <a href="asignaciones-list.html" class="nav-tab-btn">
+          <i class="fas fa-list"></i> Lista de Asignaciones
+        </a>
+      </div>
+
+      <!-- CARD ASIGNAR INDIVIDUAL -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="icon-box green"><i class="fas fa-user-plus"></i></div>
+          <div>
+            <h6>Asignar al Evento</h6>
+            <small>Asigna un empleado individual o un grupo completo</small>
+          </div>
+        </div>
+        <div class="form-card-body">
+
+          <!-- Evento (compartido) -->
+          <div class="row">
+            <div class="col-md-12">
+              <div class="field-group">
+                <label>Evento</label>
+                <select id="sel-evento">
+                  <option value="">— Selecciona evento —</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Asignar empleado individual -->
+          <div class="row">
+            <div class="col-md-8">
+              <div class="field-group">
+                <label>Empleado individual</label>
+                <select id="sel-empleado">
+                  <option value="">— Selecciona empleado —</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="field-group" style="width:100%">
+                <label style="opacity:0">·</label>
+                <button class="btn-save" id="btn-asignar" style="width:100%; justify-content:center;">
+                  <i class="fas fa-check"></i> Asignar Empleado
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="or-divider">o asigna un grupo completo</div>
+
+          <!-- Asignar grupo completo -->
+          <div class="row">
+            <div class="col-md-8">
+              <div class="field-group">
+                <label>Grupo</label>
+                <select id="sel-grupo">
+                  <option value="">— Selecciona grupo —</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <div class="field-group" style="width:100%">
+                <label style="opacity:0">·</label>
+                <button class="btn-group-assign" id="btn-asignar-grupo" style="width:100%; justify-content:center;">
+                  <i class="fas fa-users"></i> Asignar Grupo
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CARD TABLA -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="icon-box"><i class="fas fa-list"></i></div>
+          <div>
+            <h6>Asignaciones del Evento</h6>
+            <small id="subtitulo-tabla">Selecciona un evento para ver sus asignaciones</small>
+          </div>
+        </div>
+        <div class="form-card-body">
+          <table id="tablaAsignaciones" style="width:100%">
+            <thead>
+              <tr>
+                <th>Empleado</th>
+                <th>Cédula</th>
+                <th>Eliminar</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="js/bootstrap-material-design.min.js"></script>
+<script>$(document).ready(() => { $('body').bootstrapMaterialDesign(); });</script>
+<script src="js/main.js"></script>
+<script src="js/admin-api.js"></script>
+<script src="js/logout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+
+    const selEvento        = document.getElementById('sel-evento');
+    const selEmpleado      = document.getElementById('sel-empleado');
+    const selGrupo         = document.getElementById('sel-grupo');
+    const btnAsignar       = document.getElementById('btn-asignar');
+    const btnAsignarGrupo  = document.getElementById('btn-asignar-grupo');
+    const tbody            = document.querySelector('#tablaAsignaciones tbody');
+
+    let dataTable = null;
+
+    cargarEventos();
+    cargarEmpleados();
+    cargarGrupos();
+
+    // ── Cambio de evento → recarga tabla ──
+    selEvento.addEventListener('change', async () => {
+      const eventoId = selEvento.value;
+      document.getElementById('subtitulo-tabla').textContent =
+        eventoId ? `Evento: ${selEvento.options[selEvento.selectedIndex].text}` : 'Selecciona un evento para ver sus asignaciones';
+      if (dataTable) { dataTable.destroy(); dataTable = null; }
+      tbody.innerHTML = '';
+      if (!eventoId) return;
+      await cargarAsignaciones(eventoId);
+    });
+
+    // ── Cargar eventos ──
+    async function cargarEventos() {
+      try {
+        const res  = await fetch('/api/eventos', { headers: authHeaders() });
+        const data = await res.json();
+        selEvento.innerHTML = '<option value="">— Selecciona evento —</option>' +
+          data.map(e => `<option value="${e.id}">${e.titulo}</option>`).join('');
+      } catch (e) { console.error('Error cargando eventos:', e); }
+    }
+
+    // ── Cargar empleados ──
+    async function cargarEmpleados() {
+      try {
+        const res  = await fetch('/api/empleados', { headers: authHeaders() });
+        const data = await res.json();
+        selEmpleado.innerHTML = '<option value="">— Selecciona empleado —</option>' +
+          data.map(e => `<option value="${e.id}">${e.nombre} ${e.apellido}</option>`).join('');
+      } catch (e) { console.error('Error cargando empleados:', e); }
+    }
+
+    // ── Cargar grupos ──
+    async function cargarGrupos() {
+      try {
+        const res  = await fetch('/api/grupos', { headers: authHeaders() });
+        const data = await res.json();
+        selGrupo.innerHTML = '<option value="">— Selecciona grupo —</option>' +
+          data.map(g => `<option value="${g.id}">${g.nombre}</option>`).join('');
+      } catch (e) { console.error('Error cargando grupos:', e); }
+    }
+
+    // ── Cargar asignaciones del evento ──
+    async function cargarAsignaciones(eventoId) {
+      try {
+        const res  = await fetch(`/api/empleado-eventos/evento/${eventoId}`, { headers: authHeaders() });
+        const data = await res.json();
+
+        if (dataTable) { dataTable.destroy(); dataTable = null; }
+        tbody.innerHTML = '';
+
+        data.forEach(a => {
+          const emp    = a.empleado || {};
+          const nombre = emp.nombre ? `${emp.nombre} ${emp.apellido}` : '-';
+          const cedula = emp.cedula || '-';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${nombre}</td>
+            <td>${cedula}</td>
+            <td>
+              <button class="btn-del eliminar-btn" data-id="${a.id}" data-empleado-id="${emp.id}" data-nombre="${nombre}">
+                <i class="fas fa-trash-alt"></i> Eliminar
+              </button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+
+        dataTable = $('#tablaAsignaciones').DataTable({
+          paging: true, searching: true, ordering: true, autoWidth: false,
+          language: {
+            search: 'Buscar:', lengthMenu: 'Mostrar _MENU_ registros',
+            info: 'Mostrando _START_ a _END_ de _TOTAL_ asignaciones',
+            zeroRecords: 'No se encontraron asignaciones',
+            emptyTable: 'Sin asignaciones para este evento',
+            paginate: { previous: 'Anterior', next: 'Siguiente' }
+          }
+        });
+      } catch (e) { console.error('Error cargando asignaciones:', e); }
+    }
+
+    // ── Notificación push ──
+    async function enviarNotificacion(empleadoId, titulo, cuerpo) {
+      try {
+        await fetch('/api/notificaciones', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ titulo, cuerpo, empleadosIds: [empleadoId] })
+        });
+      } catch (e) { console.warn('Notificación no enviada:', e); }
+    }
+
+    // ── Asignar empleado individual ──
+    btnAsignar.addEventListener('click', async () => {
+      const empleadoId   = selEmpleado.value;
+      const eventoId     = selEvento.value;
+      const eventoNombre = selEvento.options[selEvento.selectedIndex]?.text || 'un evento';
+      const empleadoNombre = selEmpleado.options[selEmpleado.selectedIndex]?.text || 'Empleado';
+
+      if (!eventoId)   { Swal.fire('Selecciona un evento', '', 'warning');   return; }
+      if (!empleadoId) { Swal.fire('Selecciona un empleado', '', 'warning'); return; }
+
+      btnAsignar.disabled = true;
+      btnAsignar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Asignando...';
+
+      try {
+        const res  = await fetch('/api/empleado-eventos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ empleado_id: empleadoId, evento_id: eventoId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'No se pudo asignar');
+
+        await enviarNotificacion(
+          Number(empleadoId),
+          '📅 Nueva asignación de evento',
+          `Hola ${empleadoNombre}, has sido asignado al evento "${eventoNombre}".`
+        );
+
+        Swal.fire({ title: '¡Asignado!', icon: 'success', timer: 2000, showConfirmButton: false });
+        await cargarAsignaciones(eventoId);
+      } catch (err) {
+        Swal.fire('Error', err.message, 'error');
+      } finally {
+        btnAsignar.disabled = false;
+        btnAsignar.innerHTML = '<i class="fas fa-check"></i> Asignar Empleado';
+      }
+    });
+
+    // ── Asignar grupo completo ──
+    btnAsignarGrupo.addEventListener('click', async () => {
+      const grupoId      = selGrupo.value;
+      const eventoId     = selEvento.value;
+      const eventoNombre = selEvento.options[selEvento.selectedIndex]?.text || 'un evento';
+      const grupoNombre  = selGrupo.options[selGrupo.selectedIndex]?.text || 'el grupo';
+
+      if (!eventoId) { Swal.fire('Selecciona un evento', '', 'warning'); return; }
+      if (!grupoId)  { Swal.fire('Selecciona un grupo', '', 'warning');  return; }
+
+      btnAsignarGrupo.disabled = true;
+      btnAsignarGrupo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Asignando grupo...';
+
+      try {
+        // 1. Obtener empleados del grupo
+        const resGrupo    = await fetch(`/api/empleado-grupos/grupo/${grupoId}`, { headers: authHeaders() });
+        const asignaciones = await resGrupo.json();
+
+        if (!Array.isArray(asignaciones) || !asignaciones.length) {
+          Swal.fire('Sin empleados', `El grupo "${grupoNombre}" no tiene empleados asignados.`, 'warning');
+          return;
+        }
+
+        // 2. Asignar cada empleado al evento
+        let asignados = 0;
+        let omitidos  = 0;
+
+        await Promise.all(asignaciones.map(async (a) => {
+          const empId   = a.empleado_id;
+          const empNombre = a.empleado?.nombre || 'Empleado';
+
+          try {
+            const res = await fetch('/api/empleado-eventos', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', ...authHeaders() },
+              body: JSON.stringify({ empleado_id: empId, evento_id: eventoId })
+            });
+
+            if (res.ok) {
+              asignados++;
+              await enviarNotificacion(
+                Number(empId),
+                '📅 Nueva asignación de evento',
+                `Hola ${empNombre}, has sido asignado al evento "${eventoNombre}".`
+              );
+            } else {
+              omitidos++; // ya estaba asignado u otro error
+            }
+          } catch (_) { omitidos++; }
+        }));
+
+        // 3. Resultado
+        let msg = `${asignados} empleado(s) asignado(s) correctamente.`;
+        if (omitidos > 0) msg += ` ${omitidos} omitido(s) (ya estaban asignados).`;
+
+        Swal.fire({
+          title: '¡Grupo asignado!',
+          text: msg,
+          icon: asignados > 0 ? 'success' : 'warning',
+          timer: 3000,
+          showConfirmButton: false
+        });
+
+        selGrupo.value = '';
+        await cargarAsignaciones(eventoId);
+
+      } catch (err) {
+        Swal.fire('Error', err.message, 'error');
+      } finally {
+        btnAsignarGrupo.disabled = false;
+        btnAsignarGrupo.innerHTML = '<i class="fas fa-users"></i> Asignar Grupo';
+      }
+    });
+
+    // ── Eliminar asignación ──
+    $(document).on('click', '.eliminar-btn', async function () {
+      const id           = this.dataset.id;
+      const empleadoId   = this.dataset.empleadoId;
+      const nombre       = this.dataset.nombre || 'Empleado';
+      const eventoId     = selEvento.value;
+      const eventoNombre = selEvento.options[selEvento.selectedIndex]?.text || 'el evento';
+
+      const result = await Swal.fire({
+        title: '¿Eliminar esta asignación?', text: 'Esta acción no se puede deshacer.',
+        icon: 'warning', showCancelButton: true,
+        confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8',
+        confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
+      });
+      if (!result.isConfirmed) return;
+
+      try {
+        const res = await fetch(`/api/empleado-eventos/${id}`, { method: 'DELETE', headers: authHeaders() });
+        if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'No se pudo eliminar'); }
+
+        await enviarNotificacion(
+          Number(empleadoId),
+          '❌ Asignación eliminada',
+          `Hola ${nombre}, tu asignación al evento "${eventoNombre}" ha sido eliminada.`
+        );
+
+        Swal.fire({ title: '¡Eliminada!', icon: 'success', timer: 2000, showConfirmButton: false });
+        await cargarAsignaciones(eventoId);
+      } catch (err) {
+        Swal.fire('Error', err.message, 'error');
+      }
+    });
+
+  });
+</script>
+
+</body>
+</html>

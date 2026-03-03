@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Notificaciones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --primary-dark: #0284c7;
+      --primary-light: #e0f2fe;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #94a3b8;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .main-container { height: 100vh; display: flex; }
+
+    .page-content {
+      flex: 1;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    .full-box.navbar-info {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-header-custom { padding: 18px 24px 10px; }
+    .page-header-custom h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 2px;
+    }
+    .page-header-custom p { font-size: 13px; color: var(--muted); margin: 0; }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px 30px;
+    }
+    .scroll-area::-webkit-scrollbar { width: 6px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    /* NAV TABS */
+    .nav-tabs-custom {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding-top: 4px;
+    }
+    .nav-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: none;
+      transition: all .2s;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    .nav-tab-btn:hover { color: var(--primary); border-color: var(--primary); text-decoration: none; }
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(14,165,233,.3);
+    }
+
+    /* CARD */
+    .list-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeUp .35s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .list-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1.5px solid var(--border);
+      background: #fafbfc;
+    }
+    .icon-box {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .list-card-header h6 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0;
+      color: var(--text);
+    }
+    .list-card-header small { font-size: 12px; color: var(--muted); display: block; }
+    .list-card-body { padding: 16px 20px; }
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* TABLE */
+    #miTabla { width: 100%; border-collapse: collapse; font-size: 13px; }
+    #miTabla thead th {
+      background: #1e293b !important;
+      color: #fff !important;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 11px 14px;
+      text-align: center;
+      border: none !important;
+    }
+    #miTabla thead th:first-child { border-radius: 8px 0 0 8px; }
+    #miTabla thead th:last-child  { border-radius: 0 8px 8px 0; }
+    #miTabla tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    #miTabla tbody tr:hover { background: #f8fafc; }
+    #miTabla tbody td { padding: 10px 14px; vertical-align: middle; text-align: center; color: var(--text); }
+
+    /* STATUS BADGE */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .status-badge.enviado { background: #d1fae5; color: #065f46; }
+    .status-badge.fallido { background: #fee2e2; color: #991b1b; }
+    .status-badge .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .status-badge.enviado .dot { background: var(--success); }
+    .status-badge.fallido .dot  { background: var(--danger); }
+
+    /* FECHA */
+    .fecha-text { font-size: 12px; color: var(--muted); }
+
+    /* MENSAJE truncado */
+    .msg-text {
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-block;
+    }
+
+    /* BTN VER */
+    .btn-ver {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+    .btn-ver:hover { background: var(--primary); color: #fff; }
+
+    /* DATATABLES overrides */
+    .dataTables_wrapper .dataTables_filter input {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14,165,233,.1);
+    }
+    .dataTables_wrapper .dataTables_length select {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 5px 10px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button { border-radius: 8px !important; font-family: 'DM Sans', sans-serif; font-size: 13px; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: var(--primary) !important; color: #fff !important; border: none !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover { background: var(--primary-light) !important; color: var(--primary) !important; border: none !important; }
+
+    /* MODAL */
+    .modal-content { border-radius: 18px; overflow: hidden; border: none; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
+    .modal-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border: none;
+      padding: 16px 22px;
+    }
+    .modal-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: #fff; }
+    .modal-header .close { color: rgba(255,255,255,.8); opacity: 1; font-size: 22px; }
+    .modal-header .close:hover { color: #fff; }
+    .modal-footer { border-top: 1.5px solid var(--border); padding: 12px 20px; }
+
+    .modal-info-row { margin-bottom: 12px; }
+    .modal-info-row label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .modal-info-row p {
+      font-size: 14px;
+      color: var(--text);
+      margin: 0;
+      font-weight: 500;
+    }
+
+    #modalDetalleTabla { width: 100%; border-collapse: collapse; font-size: 13px; }
+    #modalDetalleTabla thead th {
+      background: #1e293b;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      text-align: center;
+    }
+    #modalDetalleTabla tbody tr { border-bottom: 1px solid var(--border); }
+    #modalDetalleTabla tbody td { padding: 9px 14px; vertical-align: middle; text-align: center; font-size: 13px; }
+
+    .btn-modal-close {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .btn-modal-close:hover { border-color: var(--muted); }
+
+    i { transform: none !important; filter: none !important; }
+
+    @media (max-width: 768px) {
+      html, body { overflow: auto; }
+      .page-content { overflow: auto; height: auto; }
+      .scroll-area { overflow: visible; }
+    }
+  </style>
+</head>
+
+<body>
+<main class="full-box main-container">
+
+  <section class="full-box nav-lateral">
+    <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+    <div class="full-box nav-lateral-content">
+      <figure class="full-box nav-lateral-avatar">
+        <i class="far fa-times-circle show-nav-lateral"></i>
+        <img src="assets/avatar/Avatar2.png" class="img-fluid" alt="Avatar">
+        <figcaption class="roboto-medium text-center">
+          Administrador <br><small class="roboto-condensed-light">Gestión</small>
+        </figcaption>
+      </figure>
+      <nav class="full-box nav-lateral-menu">
+        <ul>
+          <li><a href="dashboard.html"><i class="fab fa-dashcube fa-fw"></i> &nbsp; Dashboard</a></li>
+          <li><a href="notificaciones.html"><i class="fas fa-bell fa-fw"></i> &nbsp; Notificaciones</a></li>
+          <li><a class="active" href="notificaciones-list.html"><i class="fas fa-list fa-fw"></i> &nbsp; Lista de Notificaciones</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <section class="full-box page-content">
+    <nav class="full-box navbar-info">
+      <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+      <a href="#" onclick="cerrarSesion()"><i class="fas fa-power-off"></i></a>
+    </nav>
+
+    <div class="page-header-custom">
+      <h3><i class="fas fa-bell fa-fw"></i> &nbsp; Lista de Notificaciones</h3>
+      <p>Historial de notificaciones enviadas a los empleados.</p>
+    </div>
+
+    <div class="scroll-area">
+
+      <div class="nav-tabs-custom">
+        <a href="notificaciones.html" class="nav-tab-btn">
+          <i class="fas fa-paper-plane"></i> Enviar Notificación
+        </a>
+        <a href="notificaciones-list.html" class="nav-tab-btn active">
+          <i class="fas fa-list"></i> Lista de Notificaciones
+        </a>
+      </div>
+
+      <div class="list-card">
+        <div class="list-card-header">
+          <div class="icon-box"><i class="fas fa-bell"></i></div>
+          <div>
+            <h6>Notificaciones Enviadas</h6>
+            <small>Historial completo de envíos</small>
+          </div>
+        </div>
+        <div class="list-card-body table-responsive">
+          <table id="miTabla" style="width:100%">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Mensaje</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Detalles</th>
+              </tr>
+            </thead>
+            <tbody id="tablaNotificaciones"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<!-- MODAL DETALLES -->
+<div class="modal fade" id="modalDetalles" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-info-circle"></i> &nbsp; Detalles de Notificación</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div class="modal-info-row">
+          <label>Título</label>
+          <p id="modalTitulo"></p>
+        </div>
+        <div class="modal-info-row">
+          <label>Mensaje</label>
+          <p id="modalMensaje"></p>
+        </div>
+        <hr style="border-color: var(--border);">
+        <label style="font-size:11px; font-weight:600; color:var(--muted); letter-spacing:.05em; text-transform:uppercase;">
+          Destinatarios
+        </label>
+        <table id="modalDetalleTabla" class="mt-2">
+          <thead>
+            <tr>
+              <th>Empleado</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="modalDetallesBody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-close" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="js/bootstrap-material-design.min.js"></script>
+<script>$(document).ready(() => { $('body').bootstrapMaterialDesign(); });</script>
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+<script src="js/logout.js"></script>
+<script src="js/admin-api.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const tabla = document.getElementById("tablaNotificaciones");
+  let notificaciones = [];
+
+  try {
+    const res = await fetch("/api/notificaciones/listado", { headers: authHeaders() });
+    notificaciones = await res.json();
+    tabla.innerHTML = "";
+    notificaciones.forEach(notif => {
+      const todoEnviado = notif.detalles.every(d => d.estado === 'enviado');
+      const estado = todoEnviado ? 'enviado' : 'fallido';
+      const fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td><strong>${notif.titulo}</strong></td>
+        <td><span class="msg-text">${notif.mensaje}</span></td>
+        <td><span class="fecha-text">${new Date(notif.fecha_envio).toLocaleString()}</span></td>
+        <td>
+          <span class="status-badge ${estado}">
+            <span class="dot"></span>
+            ${estado === 'enviado' ? 'Enviado' : 'Con fallos'}
+          </span>
+        </td>
+        <td>
+          <button class="btn-ver btn-detalle" data-id="${notif.id}">
+            <i class="fas fa-eye"></i> Ver
+          </button>
+        </td>
+      `;
+      tabla.appendChild(fila);
+    });
+
+    $('#miTabla').DataTable({
+      destroy: true,
+      paging: true,
+      searching: true,
+      ordering: true,
+      autoWidth: false,
+      language: {
+        search: "Buscar:",
+        lengthMenu: "Mostrar _MENU_ registros",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ notificaciones",
+        paginate: { previous: "Anterior", next: "Siguiente" }
+      }
+    });
+
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('.btn-detalle');
+      if (!btn) return;
+
+      const id = Number(btn.dataset.id);
+      const notif = notificaciones.find(n => n.id === id);
+      if (!notif) return;
+
+      document.getElementById('modalTitulo').textContent  = notif.titulo;
+      document.getElementById('modalMensaje').textContent = notif.mensaje;
+
+      const body = document.getElementById('modalDetallesBody');
+      body.innerHTML = '';
+
+      (notif.detalles || []).forEach(d => {
+        const tr = document.createElement('tr');
+        const nombre = `${d.empleado?.nombre || ''} ${d.empleado?.apellido || ''}`.trim() || `ID ${d.empleado_id}`;
+        tr.innerHTML = `
+          <td>${nombre}</td>
+          <td>
+            <span class="status-badge ${d.estado}">
+              <span class="dot"></span>
+              ${d.estado}
+            </span>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+
+      $('#modalDetalles').modal('show');
+    });
+
+  } catch (err) {
+    console.error("Error al cargar notificaciones:", err);
+  }
+});
+</script>
+</body>
+</html>

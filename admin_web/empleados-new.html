@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Empleados</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <!-- <link rel="stylesheet" href="css/sweetalert2.min.css"> -->
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --primary-dark: #0284c7;
+      --primary-light: #e0f2fe;
+      --success: #10b981;
+      --success-dark: #059669;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #94a3b8;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .main-container {
+      height: 100vh;
+      display: flex;
+    }
+
+    .page-content {
+      flex: 1;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    .full-box.navbar-info {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-header-custom {
+      padding: 18px 24px 10px;
+    }
+
+    .page-header-custom h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 2px;
+    }
+
+    .page-header-custom p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px 30px;
+    }
+
+    .scroll-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .scroll-area::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 10px;
+    }
+
+    /* NAV TABS */
+    .nav-tabs-custom {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding-top: 4px;
+    }
+
+    .nav-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: none;
+      transition: all .2s;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    .nav-tab-btn:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      text-decoration: none;
+    }
+
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(14, 165, 233, .3);
+    }
+
+    /* CARD */
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeUp .35s ease both;
+    }
+
+    .form-card:nth-child(2) {
+      animation-delay: .07s;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1.5px solid var(--border);
+      background: #fafbfc;
+    }
+
+    .icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .icon-box.green {
+      background: #d1fae5;
+      color: var(--success);
+    }
+
+    .form-card-header h6 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0;
+      color: var(--text);
+    }
+
+    .form-card-header small {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+    }
+
+    .form-card-body {
+      padding: 20px;
+    }
+
+    /* FIELDS */
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .field-group input,
+    .field-group select {
+      width: 100%;
+      height: 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0 14px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+      appearance: none;
+    }
+
+    .field-group input[type="password"] {
+      letter-spacing: .1em;
+    }
+
+    .field-group input:focus,
+    .field-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, .12);
+    }
+
+    /* BOTONES */
+    .btn-save {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .2s, opacity .2s;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, .35);
+    }
+
+    .btn-save:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(14, 165, 233, .4);
+    }
+
+    .btn-save:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-cancel {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: none;
+      transition: border-color .2s, color .2s;
+    }
+
+    .btn-cancel:hover {
+      border-color: var(--muted);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    i {
+      transform: none !important;
+      filter: none !important;
+    }
+
+    @media (max-width: 768px) {
+
+      html,
+      body {
+        overflow: auto;
+      }
+
+      .page-content {
+        overflow: auto;
+        height: auto;
+      }
+
+      .scroll-area {
+        overflow: visible;
+      }
+
+      .btn-save,
+      .btn-cancel {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="full-box main-container">
+
+    <!-- NAV LATERAL -->
+    <section class="full-box nav-lateral">
+      <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+      <div class="full-box nav-lateral-content">
+        <figure class="full-box nav-lateral-avatar">
+          <i class="far fa-times-circle show-nav-lateral"></i>
+          <img src="assets/avatar/Avatar2.png" class="img-fluid" alt="Avatar">
+          <figcaption class="roboto-medium text-center">
+            Administrador <br><small class="roboto-condensed-light">Gestión</small>
+          </figcaption>
+        </figure>
+        <nav class="full-box nav-lateral-menu">
+          <ul>
+            <li><a href="dashboard.html"><i class="fab fa-dashcube fa-fw"></i> &nbsp; Dashboard</a></li>
+            <li><a href="grupos-new.html"><i class="fas fa-map-marker-alt fa-fw"></i> &nbsp; Grupos de Empleados</a></li>
+            <li><a class="active" href="empleados-new.html"><i class="fas fa-user-plus fa-fw"></i> &nbsp; Nuevo
+                Empleado</a></li>
+            <li><a href="empleados-list.html"><i class="fas fa-users fa-fw"></i> &nbsp; Lista de Empleados</a></li>
+          </ul>
+        </nav>
+      </div>
+    </section>
+
+    <!-- CONTENIDO -->
+    <section class="full-box page-content">
+      <nav class="full-box navbar-info">
+        <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+        <a href="#" class="btn-exit-system" onclick="cerrarSesion()"><i class="fas fa-power-off"></i></a>
+      </nav>
+
+      <div class="page-header-custom">
+        <h3><i class="fas fa-user-plus fa-fw"></i> &nbsp; Gestión de Empleados</h3>
+        <p>Registra y administra los empleados del sistema.</p>
+      </div>
+
+      <div class="scroll-area">
+
+        <div class="nav-tabs-custom">
+          <a href="empleados-new.html" class="nav-tab-btn active">
+            <i class="fas fa-user-plus"></i> Nuevo Empleado
+          </a>
+          <a href="empleados-list.html" class="nav-tab-btn">
+            <i class="fas fa-users"></i> Lista de Empleados
+          </a>
+        </div>
+
+        <form id="formEmpleado">
+
+          <!-- CARD DATOS PERSONALES -->
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="icon-box"><i class="fas fa-user"></i></div>
+              <div>
+                <h6>Datos Personales</h6>
+                <small>Información básica del empleado</small>
+              </div>
+            </div>
+            <div class="form-card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label for="cedula">Cédula</label>
+                    <input type="text" id="cedula" name="cedula" maxlength="10" placeholder="0000000000"
+                      pattern="[0-9]{10}" inputmode="numeric" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" id="nombre" name="nombre" placeholder="" pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+                      required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label for="apellido">Apellido</label>
+                    <input type="text" id="apellido" name="apellido" placeholder=""
+                      pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="correo@ejemplo.com" required
+                      pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-group">
+                    <label for="password">Contraseña</label>
+                    <div style="position: relative;">
+                      <input type="password" id="password" name="password" placeholder="••••••••" required minlength="4"
+                        style="padding-right: 44px;">
+                      <button type="button" id="togglePassword"
+                        style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); padding: 0;">
+                        <i class="fas fa-eye" id="toggleIcon"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD ROL, CARGO Y LUGAR -->
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="icon-box green"><i class="fas fa-id-badge"></i></div>
+              <div>
+                <h6>Rol, Cargo y Lugar</h6>
+                <small>Asignación organizacional del empleado</small>
+              </div>
+            </div>
+            <div class="form-card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label for="rol_id">Rol</label>
+                    <select id="rol_id" name="rol_id" required>
+                      <option value="">— Seleccione un rol —</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label for="cargo_id">Cargo</label>
+                    <select id="cargo_id" name="cargo_id" required>
+                      <option value="">— Seleccione un cargo —</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="field-group">
+                    <label for="lugar_id">Lugar de Trabajo</label>
+                    <select id="lugar_id" name="lugar_id">
+                      <option value="">— Seleccione un lugar —</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="action-row">
+                <button type="submit" class="btn-save" id="btnGuardar">
+                  <i class="far fa-save"></i> Guardar Empleado
+                </button>
+                <a href="empleados-list.html" class="btn-cancel">
+                  <i class="fas fa-arrow-left"></i> Cancelar
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/jquery-3.4.1.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/bootstrap-material-design.min.js"></script>
+  <script>$(document).ready(() => { $('body').bootstrapMaterialDesign(); });</script>
+  <script src="js/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+  <script src="js/logout.js"></script>
+  <script src="js/admin-api.js"></script>
+  <script>
+    const form = document.getElementById("formEmpleado");
+    const cedulaInput = document.getElementById("cedula");
+    const nombreInput = document.getElementById("nombre");
+    const apellidoInput = document.getElementById("apellido");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const btnGuardar = document.getElementById("btnGuardar");
+    const togglePassword = document.getElementById("togglePassword");
+    togglePassword.addEventListener('click', () => {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('toggleIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    });
+    cedulaInput.addEventListener("input", () => {
+      cedulaInput.value = cedulaInput.value.replace(/\D/g, "").slice(0, 10);
+    });
+    nombreInput.addEventListener("input", () => {
+      nombreInput.value = nombreInput.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "");
+    });
+    apellidoInput.addEventListener("input", () => {
+      apellidoInput.value = apellidoInput.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "");
+    });
+    emailInput.addEventListener("input", () => {
+      emailInput.value = emailInput.value.replace(/[^a-zA-Z0-9@._-]/g, "");
+    });
+    function obtenerId() {
+      return new URLSearchParams(window.location.search).get("id");
+    }
+
+    async function cargarSelect(url, selectId, labelField) {
+      const select = document.getElementById(selectId);
+      try {
+        const res = await fetch(url, { headers: authHeaders() }); // 👈
+        const data = await res.json();
+        const placeholder = select.options[0].textContent;
+        select.innerHTML = `<option value="">${placeholder}</option>`;
+        data.forEach(item => {
+          const opt = document.createElement("option");
+          opt.value = item.id;
+          opt.textContent = item[labelField];
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error(`Error al cargar ${selectId}:`, err);
+      }
+    }
+
+    async function cargarEmpleado(id) {
+      try {
+        const res = await fetch(`/api/empleados/${id}`, { headers: authHeaders() });
+        if (!res.ok) throw new Error("Empleado no encontrado");
+        const e = await res.json();
+
+        cedulaInput.value = e.cedula || "";
+        nombreInput.value = e.nombre || "";
+        apellidoInput.value = e.apellido || "";
+        emailInput.value = e.email || "";
+        document.getElementById("rol_id").value = e.rol_id || "";
+        document.getElementById("cargo_id").value = e.cargo_id || "";
+        document.getElementById("lugar_id").value = e.lugar_id || "";
+
+        passwordInput.removeAttribute("required");
+        passwordInput.placeholder = "Dejar vacío para no cambiar";
+
+        // Cambiar título al editar
+        document.querySelector('.page-header-custom h3').innerHTML =
+          '<i class="fas fa-user-edit fa-fw"></i> &nbsp; Editar Empleado';
+
+      } catch (err) {
+        Swal.fire({ title: 'Error', text: 'No se pudo cargar el empleado.', icon: 'error', timer: 2000, showConfirmButton: false });
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await cargarSelect("/api/roles", "rol_id", "descripcion");
+      await cargarSelect("/api/cargos", "cargo_id", "descripcion");
+      await cargarSelect("/api/lugares", "lugar_id", "nombre");
+      const id = obtenerId();
+      if (id) await cargarEmpleado(id);
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = obtenerId();
+
+      btnGuardar.disabled = true;
+      btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+      const empleadoData = {
+        cedula: cedulaInput.value,
+        nombre: nombreInput.value,
+        apellido: apellidoInput.value,
+        email: emailInput.value || null,
+        rol_id: document.getElementById("rol_id").value || null,
+        cargo_id: document.getElementById("cargo_id").value || null,
+        lugar_id: document.getElementById("lugar_id").value || null,
+      };
+
+      const pass = passwordInput.value;
+      if (pass) empleadoData.password = pass;
+      if (pass && pass.length < 4) {
+        Swal.fire('Contraseña muy corta', 'Debe tener al menos 4 caracteres.', 'warning');
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = '<i class="far fa-save"></i> Guardar Empleado';
+        return;
+      }
+      try {
+        const res = await fetch(id ? `/api/empleados/${id}` : "/api/empleados", {
+          method: id ? "PUT" : "POST",
+          headers: authHeaders(),
+          body: JSON.stringify(empleadoData)
+        });
+        console.log('Token:', localStorage.getItem('token'));
+        console.log('Headers:', authHeaders());
+        if (res.ok) {
+          Swal.fire({
+            title: '¡Éxito!',
+            text: `Empleado ${id ? 'actualizado' : 'creado'} correctamente.`,
+            icon: 'success', timer: 2000, showConfirmButton: false
+          }).then(() => { window.location.href = "empleados-list.html"; });
+        } else {
+          const errorData = await res.json();
+          Swal.fire({ title: 'Error', text: errorData.error || 'Error al guardar.', icon: 'error', timer: 2000, showConfirmButton: false });
+        }
+      } catch (err) {
+        Swal.fire({ title: 'Error', text: 'Ocurrió un error al guardar.', icon: 'error', timer: 2000, showConfirmButton: false });
+      } finally {
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = '<i class="far fa-save"></i> Guardar Empleado';
+      }
+    });
+  </script>
+
+</body>
+
+</html>

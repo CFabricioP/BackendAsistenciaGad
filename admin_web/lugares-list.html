@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Lugares</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/sweetalert2.min.css">
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --primary-dark: #0284c7;
+      --primary-light: #e0f2fe;
+      --danger: #ef4444;
+      --success: #10b981;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #94a3b8;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    #zoom-root { height: 100vh; width: 100vw; }
+    .main-container { height: 100vh; display: flex; }
+
+    .page-content {
+      flex: 1;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    .full-box.navbar-info {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-header-custom { padding: 18px 24px 10px; }
+    .page-header-custom h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 2px;
+    }
+    .page-header-custom p { font-size: 13px; color: var(--muted); margin: 0; }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px 30px;
+    }
+    .scroll-area::-webkit-scrollbar { width: 6px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    /* NAV TABS */
+    .nav-tabs-custom {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding-top: 4px;
+    }
+    .nav-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: none;
+      transition: all .2s;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    .nav-tab-btn:hover { color: var(--primary); border-color: var(--primary); text-decoration: none; }
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(14,165,233,.3);
+    }
+
+    /* CARD */
+    .list-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeUp .35s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .list-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1.5px solid var(--border);
+      background: #fafbfc;
+    }
+    .list-card-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .icon-box {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .list-card-header h6 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0;
+      color: var(--text);
+    }
+    .list-card-header small { font-size: 12px; color: var(--muted); display: block; }
+
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+      box-shadow: 0 3px 10px rgba(14,165,233,.3);
+    }
+    .btn-add:hover { background: var(--primary-dark); color: #fff; text-decoration: none; transform: translateY(-1px); }
+
+    /* TABLE */
+    .list-card-body { padding: 16px 20px; }
+
+    #miTabla {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    #miTabla thead th {
+      background: #1e293b !important;
+      color: #fff !important;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 11px 14px;
+      text-align: center;
+      border: none !important;
+    }
+    #miTabla thead th:first-child { border-radius: 8px 0 0 8px; }
+    #miTabla thead th:last-child  { border-radius: 0 8px 8px 0; }
+
+    #miTabla tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    #miTabla tbody tr:hover { background: #f8fafc; }
+    #miTabla tbody td {
+      padding: 10px 14px;
+      vertical-align: middle;
+      text-align: center;
+      color: var(--text);
+      white-space: nowrap;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Número badge */
+    .num-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px; height: 26px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* Coordenadas */
+    .coord-text {
+      font-family: 'DM Mono', monospace, sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--bg);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    /* Radio badge */
+    .radio-badge {
+      display: inline-block;
+      background: #fef3c7;
+      color: #d97706;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Botones acción */
+    .btn-edit {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--success);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .2s, transform .15s;
+    }
+    .btn-edit:hover { background: #059669; transform: translateY(-1px); }
+
+    .btn-del {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .2s, transform .15s;
+    }
+    .btn-del:hover { background: #dc2626; transform: translateY(-1px); }
+
+    /* DataTables overrides */
+    .dataTables_wrapper .dataTables_filter input {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14,165,233,.1);
+    }
+    .dataTables_wrapper .dataTables_length select {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 5px 10px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      border-radius: 8px !important;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background: var(--primary) !important;
+      color: #fff !important;
+      border: none !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background: var(--primary-light) !important;
+      color: var(--primary) !important;
+      border: none !important;
+    }
+
+    i { transform: none !important; filter: none !important; }
+
+    @media (max-width: 768px) {
+      html, body { overflow: auto; }
+      .page-content { overflow: auto; height: auto; }
+      .scroll-area { overflow: visible; }
+      .nav-tabs-custom { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+
+<body>
+<div id="zoom-root">
+<main class="full-box main-container">
+
+  <section class="full-box nav-lateral">
+    <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+    <div class="full-box nav-lateral-content">
+      <figure class="full-box nav-lateral-avatar">
+        <i class="far fa-times-circle show-nav-lateral"></i>
+        <img src="assets/avatar/Avatar2.png" class="img-fluid" alt="Avatar">
+        <figcaption class="roboto-medium text-center">
+          Administrador <br><small class="roboto-condensed-light">Gestión</small>
+        </figcaption>
+      </figure>
+      <nav class="full-box nav-lateral-menu">
+        <ul>
+          <li><a href="dashboard.html"><i class="fab fa-dashcube fa-fw"></i> &nbsp; Dashboard</a></li>
+          <li><a href="lugares-new.html"><i class="fas fa-plus fa-fw"></i> &nbsp; Agregar Lugar</a></li>
+          <li><a class="active" href="lugares-list.html"><i class="fas fa-list fa-fw"></i> &nbsp; Lista de Lugares</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <section class="full-box page-content">
+    <nav class="full-box navbar-info">
+      <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+      <a href="#" onclick="cerrarSesion()"><i class="fas fa-power-off"></i></a>
+    </nav>
+
+    <div class="page-header-custom">
+      <h3><i class="fas fa-map-marked-alt fa-fw"></i> &nbsp; Lista de Lugares</h3>
+      <p>Visualiza todos los lugares registrados, sus coordenadas y radio de cobertura.</p>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- TABS -->
+      <div class="nav-tabs-custom">
+        <a href="lugares-new.html" class="nav-tab-btn">
+          <i class="fas fa-plus"></i> Agregar Lugar
+        </a>
+        <a href="lugares-list.html" class="nav-tab-btn active">
+          <i class="fas fa-list"></i> Lista de Lugares
+        </a>
+      </div>
+
+      <!-- CARD TABLA -->
+      <div class="list-card">
+        <div class="list-card-header">
+          <div class="list-card-header-left">
+            <div class="icon-box"><i class="fas fa-map-pin"></i></div>
+            <div>
+              <h6>Lugares Registrados</h6>
+              <small>Todos los puntos de trabajo activos</small>
+            </div>
+          </div>
+          <a href="lugares-new.html" class="btn-add">
+            <i class="fas fa-plus"></i> Nuevo Lugar
+          </a>
+        </div>
+        <div class= "list-card-body table-responsive">
+          <table id="miTabla" class="table" style="width:100%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Latitud</th>
+                <th>Longitud</th>
+                <th>Radio (m)</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+              </tr>
+            </thead>
+            <tbody id="tablaLugares"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+</div>
+
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="js/bootstrap-material-design.min.js"></script>
+<script>$(document).ready(function () { $('body').bootstrapMaterialDesign(); });</script>
+<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+<script src="js/logout.js"></script>
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+<script src="js/admin-api.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const tablaBody = document.getElementById("tablaLugares");
+
+  try {
+    const response = await fetch("/api/lugares",{ headers: authHeaders()});
+    const lugares = await response.json();
+
+    lugares.forEach((lugar, index) => {
+      const fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td><span class="num-badge">${index + 1}</span></td>
+        <td><strong>${lugar.nombre}</strong></td>
+        <td>${lugar.direccion || '-'}</td>
+        <td><span class="coord-text">${lugar.latitud}</span></td>
+        <td><span class="coord-text">${lugar.longitud}</span></td>
+        <td><span class="radio-badge">${lugar.radio || 10} m</span></td>
+        <td>
+          <button class="btn-edit editar-btn" data-id="${lugar.id}">
+            <i class="fas fa-pen"></i> Editar
+          </button>
+        </td>
+        <td>
+          <button class="btn-del eliminar-btn" data-id="${lugar.id}">
+            <i class="fas fa-trash-alt"></i> Eliminar
+          </button>
+        </td>
+      `;
+      tablaBody.appendChild(fila);
+    });
+
+    const dataTable = $('#miTabla').DataTable({
+      destroy: true,
+      paging: true,
+      searching: true,
+      ordering: true,
+      autoWidth: false,
+      language: {
+        search: "Buscar:",
+        lengthMenu: "Mostrar _MENU_ registros",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ lugares",
+        paginate: { previous: "Anterior", next: "Siguiente" }
+      }
+    });
+
+    $('#miTabla tbody').on('click', '.editar-btn', function () {
+      window.location.href = `lugares-new.html?id=${this.dataset.id}`;
+    });
+
+    $('#miTabla tbody').on('click', '.eliminar-btn', async function () {
+      const id = this.dataset.id;
+      const result = await Swal.fire({
+        title: '¿Eliminar este lugar?',
+        text: "Esta acción no se puede deshacer.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const res = await fetch(`/api/lugares/${id}`, { method: "DELETE", headers: authHeaders() });
+          if (res.ok) {
+            dataTable.row($(this).parents('tr')).remove().draw();
+            Swal.fire({ title: '¡Eliminado!', text: 'El lugar ha sido eliminado.', icon: 'success', timer: 2000, showConfirmButton: false });
+          } else {
+            Swal.fire({ title: 'Error', text: 'No se pudo eliminar el lugar.', icon: 'error', timer: 2000, showConfirmButton: false });
+          }
+        } catch (error) {
+          console.error("Error al eliminar:", error);
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Error al cargar los lugares:", error);
+  }
+});
+</script>
+</body>
+</html>

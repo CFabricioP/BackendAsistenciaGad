@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Puntos de Encuentro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Mismos estilos que empleados-list -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/sweetalert2.min.css">
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-nav-tabs li a.active{ background:#2ca8c6; color:#fff; }
+    .table thead th{ white-space:nowrap; }
+  </style>
+</head>
+<body>
+
+<main class="full-box main-container">
+  <!-- (Navegación lateral igual que lugares-list.html) -->
+  <section class="full-box nav-lateral">
+    <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+    <div class="full-box nav-lateral-content"></div>
+  </section>
+
+  <section class="full-box page-content">
+    <nav class="full-box navbar-info">
+      <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+      <a href="#" class="btn-exit-system"><i class="fas fa-power-off"></i></a>
+    </nav>
+
+    <div class="full-box page-header">
+      <h3 class="text-left"><i class="fas fa-map-marker-alt fa-fw"></i> &nbsp; PUNTOS DE ENCUENTRO</h3>
+      <p class="text-justify">Crea, lista y elimina puntos georreferenciados para control de asistencia.</p>
+    </div>
+
+    <!-- Pestañas navegación -->
+    <div class="container-fluid">
+      <ul class="full-box list-unstyled page-nav-tabs">
+        <li><a href="empleados-new.html"><i class="fas fa-plus fa-fw"></i> &nbsp; AGREGAR EMPLEADO</a></li>
+        <li><a href="empleados-list.html"><i class="fas fa-list fa-fw"></i> &nbsp; LISTA DE EMPLEADOS</a></li>
+        <li><a class="active" href="puntos-encuentro.html"><i class="fas fa-map-marker-alt fa-fw"></i> &nbsp; PUNTOS DE ENCUENTRO</a></li>
+      </ul>
+    </div>
+
+    <div class="container-fluid mt-3">
+      <!-- Crear punto -->
+      <div class="card mb-3"><div class="card-body">
+        <h5 class="mb-3"><i class="fas fa-plus-circle mr-1"></i>Crear punto de encuentro</h5>
+        <div class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="bmd-label-floating" for="pe-nombre">Nombre</label>
+            <input id="pe-nombre" class="form-control" placeholder="Nombre">
+          </div>
+          <div class="col-md-3">
+            <label class="bmd-label-floating" for="pe-lat">Latitud</label>
+            <input id="pe-lat" class="form-control" placeholder="-0.351234">
+          </div>
+          <div class="col-md-3">
+            <label class="bmd-label-floating" for="pe-lon">Longitud</label>
+            <input id="pe-lon" class="form-control" placeholder="-78.125678">
+          </div>
+          <div class="col-md-2">
+            <label class="bmd-label-floating" for="pe-radio">Radio (m)</label>
+            <input id="pe-radio" type="number" class="form-control" value="10">
+          </div>
+          <div class="col-md-1">
+            <button id="pe-crear" class="btn btn-primary mt-2"><i class="fas fa-save mr-1"></i>Crear</button>
+          </div>
+        </div>
+      </div></div>
+
+      <!-- Tabla -->
+      <div class="table-responsive">
+        <table id="tablaPE" class="table table-bordered table-striped table-hover align-middle m-0">
+          <thead class="thead-dark text-center">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Latitud</th>
+              <th>Longitud</th>
+              <th>Radio (m)</th>
+              <th>Eliminar</th>
+            </tr>
+          </thead>
+          <tbody class="text-center"></tbody>
+        </table>
+      </div>
+
+      <div id="toast"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Scripts base -->
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="js/bootstrap-material-design.min.js"></script>
+<script src="js/sweetalert2.min.js"></script>
+<script>$(document).ready(()=>{$('body').bootstrapMaterialDesign();});</script>
+
+<!-- Utilidades globales -->
+<script src="js/admin-api.js"></script>
+
+<!-- Lógica usando tu snippet (apiFetch/authHeaders/toast) -->
+<script>
+(async function () {
+  async function cargar() {
+    try {
+      const data = await apiFetch('/api/puntos-encuentro', { headers: authHeaders() });
+      const tb = document.querySelector('#tablaPE tbody'); tb.innerHTML = '';
+      (data || []).forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.id}</td>
+          <td>${p.nombre}</td>
+          <td>${p.latitud}</td>
+          <td>${p.longitud}</td>
+          <td>${p.radio}</td>
+          <td><button class="btn btn-sm btn-danger" data-del="${p.id}"><i class="fas fa-trash"></i></button></td>
+        `;
+        tb.appendChild(tr);
+      });
+    } catch(e){
+      toast('No se pudo cargar puntos: ' + (e.message || e),'error');
+    }
+  }
+
+  document.getElementById('pe-crear').onclick = async () => {
+    const nombre  = document.getElementById('pe-nombre').value.trim();
+    const latitud = document.getElementById('pe-lat').value.trim();
+    const longitud= document.getElementById('pe-lon').value.trim();
+    const radio   = Number(document.getElementById('pe-radio').value || 10);
+    if (!nombre || !latitud || !longitud) return toast('Completa nombre/lat/lon','warning');
+    try {
+      await apiFetch('/api/puntos-encuentro', {
+        method:'POST', headers: authHeaders(),
+        body: JSON.stringify({ nombre, latitud, longitud, radio })
+      });
+      toast('Punto creado','success');
+      ['pe-nombre','pe-lat','pe-lon'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('pe-radio').value='10';
+      await cargar();
+    } catch(e){
+      toast(e.message,'error');
+    }
+  };
+
+  document.getElementById('tablaPE').addEventListener('click', async (ev) => {
+    const btn = ev.target.closest('button[data-del]'); if (!btn) return;
+    const id = btn.getAttribute('data-del');
+    if (!confirm('¿Eliminar punto #' + id + '?')) return;
+    try {
+      await apiFetch('/api/puntos-encuentro/' + id, { method:'DELETE', headers: authHeaders() });
+      toast('Eliminado','success');
+      await cargar();
+    } catch(e){
+      toast(e.message,'error');
+    }
+  });
+
+  await cargar();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Roles y Cargos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/sweetalert2.min.css">
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary:       #0ea5e9;
+      --primary-dark:  #0284c7;
+      --primary-light: #e0f2fe;
+      --success:       #10b981;
+      --success-dark:  #059669;
+      --danger:        #ef4444;
+      --purple:        #8b5cf6;
+      --purple-light:  #ede9fe;
+      --bg:            #f1f5f9;
+      --surface:       #ffffff;
+      --border:        #e2e8f0;
+      --text:          #1e293b;
+      --muted:         #94a3b8;
+      --radius:        14px;
+      --shadow:        0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      height: 100%; overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+
+    .main-container { height: 100vh; display: flex; }
+
+    .page-content {
+      flex: 1; height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column; background: var(--bg);
+    }
+
+    .full-box.navbar-info {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 20px; height: 52px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .page-header-custom { padding: 18px 24px 10px; }
+    .page-header-custom h3 {
+      font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+      color: var(--text); margin: 0 0 2px;
+    }
+    .page-header-custom p { font-size: 13px; color: var(--muted); margin: 0; }
+
+    .scroll-area {
+      flex: 1; overflow-y: auto; padding: 0 24px 30px;
+    }
+    .scroll-area::-webkit-scrollbar { width: 6px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+    /* NAV TABS */
+    .nav-tabs-custom { display: flex; gap: 8px; margin-bottom: 20px; padding-top: 4px; }
+    .nav-tab-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 18px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; text-decoration: none; transition: all .2s;
+      border: 1.5px solid var(--border); background: var(--surface); color: var(--muted);
+      cursor: pointer;
+    }
+    .nav-tab-btn:hover { color: var(--primary); border-color: var(--primary); text-decoration: none; }
+    .nav-tab-btn.active {
+      background: var(--primary); color: #fff; border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(14,165,233,.3);
+    }
+
+    /* CARD */
+    .form-card {
+      background: var(--surface); border-radius: var(--radius);
+      border: 1.5px solid var(--border); margin-bottom: 16px;
+      overflow: hidden; box-shadow: var(--shadow);
+      animation: fadeUp .35s ease both;
+    }
+    .form-card:nth-child(2) { animation-delay: .07s; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-card-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px; border-bottom: 1.5px solid var(--border);
+      background: #fafbfc;
+    }
+    .icon-box {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--primary-light); color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .icon-box.purple { background: var(--purple-light); color: var(--purple); }
+    .icon-box.green  { background: #d1fae5; color: var(--success); }
+    .form-card-header h6 {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 14px; margin: 0; color: var(--text);
+    }
+    .form-card-header small { font-size: 12px; color: var(--muted); display: block; }
+    .form-card-body { padding: 20px; }
+
+    /* FIELD */
+    .field-inline {
+      display: flex; gap: 10px; align-items: flex-end; margin-bottom: 4px;
+    }
+    .field-inline input {
+      flex: 1; height: 42px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 0 14px; font-size: 14px;
+      font-family: 'DM Sans', sans-serif; color: var(--text);
+      background: var(--surface); outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field-inline input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14,165,233,.12);
+    }
+
+    /* BOTONES */
+    .btn-save {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; border: none; border-radius: 10px; padding: 10px 20px;
+      font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; white-space: nowrap;
+      transition: transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 14px rgba(14,165,233,.3);
+    }
+    .btn-save:hover { transform: translateY(-1px); }
+    .btn-save:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .btn-edit {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--success); color: #fff; border: none; border-radius: 8px;
+      padding: 6px 12px; font-size: 12px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background .2s;
+    }
+    .btn-edit:hover { background: var(--success-dark); }
+
+    .btn-del {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--danger); color: #fff; border: none; border-radius: 8px;
+      padding: 6px 12px; font-size: 12px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background .2s;
+    }
+    .btn-del:hover { background: #dc2626; }
+
+    /* PANELS */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* TABLE */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table thead th {
+      background: #1e293b !important; color: #fff !important;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px;
+      letter-spacing: .06em; text-transform: uppercase;
+      padding: 11px 14px; text-align: center; border: none !important;
+    }
+    .data-table thead th:first-child { border-radius: 8px 0 0 8px; }
+    .data-table thead th:last-child  { border-radius: 0 8px 8px 0; }
+    .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    .data-table tbody tr:hover { background: #f8fafc; }
+    .data-table tbody td {
+      padding: 10px 14px; vertical-align: middle;
+      text-align: center; color: var(--text);
+    }
+
+    /* DataTables overrides */
+    .dataTables_wrapper .dataTables_filter input {
+      border: 1.5px solid var(--border); border-radius: 9px;
+      padding: 6px 12px; font-size: 13px;
+      font-family: 'DM Sans', sans-serif; outline: none;
+    }
+    .dataTables_wrapper .dataTables_filter input:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14,165,233,.1);
+    }
+    .dataTables_wrapper .dataTables_length select {
+      border: 1.5px solid var(--border); border-radius: 9px;
+      padding: 5px 10px; font-family: 'DM Sans', sans-serif;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      border-radius: 8px !important; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background: var(--primary) !important; color: #fff !important; border: none !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background: var(--primary-light) !important; color: var(--primary) !important; border: none !important;
+    }
+
+    i { transform: none !important; filter: none !important; }
+
+    @media (max-width: 768px) {
+      html, body { overflow: auto; }
+      .page-content { overflow: auto; height: auto; }
+      .scroll-area { overflow: visible; }
+      .field-inline { flex-direction: column; }
+      .btn-save { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+
+<body>
+<main class="full-box main-container">
+
+  <section class="full-box nav-lateral">
+    <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+    <div class="full-box nav-lateral-content">
+      <figure class="full-box nav-lateral-avatar">
+        <i class="far fa-times-circle show-nav-lateral"></i>
+        <img src="assets/avatar/Avatar2.png" class="img-fluid" alt="Avatar">
+        <figcaption class="roboto-medium text-center">
+          Administrador <br><small class="roboto-condensed-light">Gestión</small>
+        </figcaption>
+      </figure>
+      <nav class="full-box nav-lateral-menu">
+        <ul>
+          <li><a href="dashboard.html"><i class="fab fa-dashcube fa-fw"></i> &nbsp; Dashboard</a></li>
+          <li><a href="empleados-new.html"><i class="fas fa-user-plus fa-fw"></i> &nbsp; Nuevo Empleado</a></li>
+          <li><a href="empleados-list.html"><i class="fas fa-users fa-fw"></i> &nbsp; Lista de Empleados</a></li>
+          <li><a class="active" href="roles-cargos-new.html"><i class="fas fa-id-badge fa-fw"></i> &nbsp; Roles y Cargos</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  <section class="full-box page-content">
+    <nav class="full-box navbar-info">
+      <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+      <a href="#" class="btn-exit-system" onclick="cerrarSesion()"><i class="fas fa-power-off"></i></a>
+    </nav>
+
+    <div class="page-header-custom">
+      <h3><i class="fas fa-id-badge fa-fw"></i> &nbsp; Roles y Cargos</h3>
+      <p>Gestiona los roles y cargos disponibles en el sistema.</p>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- TABS SWITCH -->
+      <div class="nav-tabs-custom">
+        <button class="nav-tab-btn active" onclick="switchTab('roles', this)">
+          <i class="fas fa-user-shield"></i> Roles
+        </button>
+        <button class="nav-tab-btn" onclick="switchTab('cargos', this)">
+          <i class="fas fa-briefcase"></i> Cargos
+        </button>
+      </div>
+
+      <!-- ════════════════ PANEL ROLES ════════════════ -->
+      <div id="panel-roles" class="tab-panel active">
+
+        <!-- Formulario -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="icon-box purple"><i class="fas fa-user-shield"></i></div>
+            <div>
+              <h6 id="roles-form-title">Nuevo Rol</h6>
+              <small>Ingresa la descripción del rol</small>
+            </div>
+          </div>
+          <div class="form-card-body">
+            <div class="field-inline">
+              <input type="text" id="rol-descripcion" placeholder="Ej: Supervisor, Guardia, Técnico...">
+              <button class="btn-save" id="btn-guardar-rol" onclick="guardarRol()">
+                <i class="far fa-save"></i> Guardar
+              </button>
+              <button class="btn-edit" id="btn-cancelar-rol" style="display:none" onclick="cancelarEdicionRol()">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="icon-box"><i class="fas fa-list"></i></div>
+            <div>
+              <h6>Roles Registrados</h6>
+              <small>Lista de todos los roles del sistema</small>
+            </div>
+          </div>
+          <div class="form-card-body">
+            <table id="tablaRoles" class="data-table" style="width:100%">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Descripción</th>
+                  <th>Editar</th>
+                  <th>Eliminar</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ PANEL CARGOS ════════════════ -->
+      <div id="panel-cargos" class="tab-panel">
+
+        <!-- Formulario -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="icon-box green"><i class="fas fa-briefcase"></i></div>
+            <div>
+              <h6 id="cargos-form-title">Nuevo Cargo</h6>
+              <small>Ingresa la descripción del cargo</small>
+            </div>
+          </div>
+          <div class="form-card-body">
+            <div class="field-inline">
+              <input type="text" id="cargo-descripcion" placeholder="Ej: Analista, Coordinador, Inspector...">
+              <button class="btn-save" id="btn-guardar-cargo" onclick="guardarCargo()">
+                <i class="far fa-save"></i> Guardar
+              </button>
+              <button class="btn-edit" id="btn-cancelar-cargo" style="display:none" onclick="cancelarEdicionCargo()">
+                <i class="fas fa-times"></i> Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="icon-box"><i class="fas fa-list"></i></div>
+            <div>
+              <h6>Cargos Registrados</h6>
+              <small>Lista de todos los cargos del sistema</small>
+            </div>
+          </div>
+          <div class="form-card-body">
+            <table id="tablaCargos" class="data-table" style="width:100%">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Descripción</th>
+                  <th>Editar</th>
+                  <th>Eliminar</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<script src="js/jquery-3.4.1.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="js/bootstrap-material-design.min.js"></script>
+<script>$(document).ready(() => { $('body').bootstrapMaterialDesign(); });</script>
+<script src="js/main.js"></script>
+<script src="js/admin-api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+<script src="js/logout.js"></script>
+
+<script>
+  const dtLang = {
+    search:      'Buscar:',
+    lengthMenu:  'Mostrar _MENU_ registros',
+    info:        'Mostrando _START_ a _END_ de _TOTAL_ registros',
+    zeroRecords: 'No se encontraron registros',
+    emptyTable:  'Sin registros',
+    paginate:    { previous: 'Anterior', next: 'Siguiente' }
+  };
+
+  let dtRoles  = null;
+  let dtCargos = null;
+  let editandoRolId   = null;
+  let editandoCargoId = null;
+
+  // ── Switch de tabs ──
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`panel-${tab}`).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ════════════ ROLES ════════════
+
+  async function cargarRoles() {
+    const res  = await fetch('/api/roles', { headers: authHeaders() });
+    const data = await res.json();
+    if (dtRoles) { dtRoles.destroy(); dtRoles = null; }
+    const tbody = document.querySelector('#tablaRoles tbody');
+    tbody.innerHTML = '';
+
+    data.forEach((r, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${r.descripcion}</td>
+        <td><button class="btn-edit" onclick="editarRol(${r.id}, '${r.descripcion.replace(/'/g,"\\'")}')"><i class="fas fa-pen"></i> Editar</button></td>
+        <td><button class="btn-del"  onclick="eliminarRol(${r.id}, this)"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    if (dtRoles) { dtRoles.destroy(); dtRoles = null; }
+    dtRoles = $('#tablaRoles').DataTable({ paging: true, searching: true, ordering: true, autoWidth: false, language: dtLang });
+  }
+
+  async function guardarRol() {
+    const descripcion = document.getElementById('rol-descripcion').value.trim();
+    if (!descripcion) { Swal.fire('Campo requerido', 'Ingresa la descripción del rol.', 'warning'); return; }
+
+    const btn = document.getElementById('btn-guardar-rol');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+      const url    = editandoRolId ? `/api/roles/${editandoRolId}` : '/api/roles';
+      const method = editandoRolId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: authHeaders(),
+        body: JSON.stringify({ descripcion })
+      });
+
+      if (!res.ok) throw new Error((await res.json()).error || 'Error al guardar');
+
+      Swal.fire({ title: editandoRolId ? '¡Actualizado!' : '¡Creado!', icon: 'success', timer: 1800, showConfirmButton: false });
+      cancelarEdicionRol();
+      await cargarRoles();
+    } catch (err) {
+      Swal.fire('Error', err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="far fa-save"></i> Guardar';
+    }
+  }
+
+  function editarRol(id, descripcion) {
+    editandoRolId = id;
+    document.getElementById('rol-descripcion').value = descripcion;
+    document.getElementById('roles-form-title').textContent = 'Editar Rol';
+    document.getElementById('btn-cancelar-rol').style.display = '';
+    document.getElementById('rol-descripcion').focus();
+  }
+
+  function cancelarEdicionRol() {
+    editandoRolId = null;
+    document.getElementById('rol-descripcion').value = '';
+    document.getElementById('roles-form-title').textContent = 'Nuevo Rol';
+    document.getElementById('btn-cancelar-rol').style.display = 'none';
+  }
+
+  async function eliminarRol(id, btn) {
+    const result = await Swal.fire({
+      title: '¿Eliminar este rol?', text: 'Esta acción no se puede deshacer.',
+      icon: 'warning', showCancelButton: true,
+      confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`/api/roles/${id}`, { method: 'DELETE', headers: authHeaders() });
+      if (!res.ok) throw new Error('No se pudo eliminar');
+      dtRoles.row($(btn).parents('tr')).remove().draw();
+      Swal.fire({ title: '¡Eliminado!', icon: 'success', timer: 1800, showConfirmButton: false });
+    } catch (err) {
+      Swal.fire('Error', err.message, 'error');
+    }
+  }
+
+  // ════════════ CARGOS ════════════
+
+  async function cargarCargos() {
+    const res  = await fetch('/api/cargos', { headers: authHeaders() });
+    const data = await res.json();
+    if (dtCargos) { dtCargos.destroy(); dtCargos = null; }
+    const tbody = document.querySelector('#tablaCargos tbody');
+    tbody.innerHTML = '';
+
+    data.forEach((c, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${c.descripcion}</td>
+        <td><button class="btn-edit" onclick="editarCargo(${c.id}, '${c.descripcion.replace(/'/g,"\\'")}')"><i class="fas fa-pen"></i> Editar</button></td>
+        <td><button class="btn-del"  onclick="eliminarCargo(${c.id}, this)"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    if (dtCargos) { dtCargos.destroy(); dtCargos = null; }
+    dtCargos = $('#tablaCargos').DataTable({ paging: true, searching: true, ordering: true, autoWidth: false, language: dtLang });
+  }
+
+  async function guardarCargo() {
+    const descripcion = document.getElementById('cargo-descripcion').value.trim();
+    if (!descripcion) { Swal.fire('Campo requerido', 'Ingresa la descripción del cargo.', 'warning'); return; }
+
+    const btn = document.getElementById('btn-guardar-cargo');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+      const url    = editandoCargoId ? `/api/cargos/${editandoCargoId}` : '/api/cargos';
+      const method = editandoCargoId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: authHeaders(),
+        body: JSON.stringify({ descripcion })
+      });
+
+      if (!res.ok) throw new Error((await res.json()).error || 'Error al guardar');
+
+      Swal.fire({ title: editandoCargoId ? '¡Actualizado!' : '¡Creado!', icon: 'success', timer: 1800, showConfirmButton: false });
+      cancelarEdicionCargo();
+      await cargarCargos();
+    } catch (err) {
+      Swal.fire('Error', err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="far fa-save"></i> Guardar';
+    }
+  }
+
+  function editarCargo(id, descripcion) {
+    editandoCargoId = id;
+    document.getElementById('cargo-descripcion').value = descripcion;
+    document.getElementById('cargos-form-title').textContent = 'Editar Cargo';
+    document.getElementById('btn-cancelar-cargo').style.display = '';
+    document.getElementById('cargo-descripcion').focus();
+  }
+
+  function cancelarEdicionCargo() {
+    editandoCargoId = null;
+    document.getElementById('cargo-descripcion').value = '';
+    document.getElementById('cargos-form-title').textContent = 'Nuevo Cargo';
+    document.getElementById('btn-cancelar-cargo').style.display = 'none';
+  }
+
+  async function eliminarCargo(id, btn) {
+    const result = await Swal.fire({
+      title: '¿Eliminar este cargo?', text: 'Esta acción no se puede deshacer.',
+      icon: 'warning', showCancelButton: true,
+      confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`/api/cargos/${id}`, { method: 'DELETE', headers: authHeaders() });
+      if (!res.ok) throw new Error('No se pudo eliminar');
+      dtCargos.row($(btn).parents('tr')).remove().draw();
+      Swal.fire({ title: '¡Eliminado!', icon: 'success', timer: 1800, showConfirmButton: false });
+    } catch (err) {
+      Swal.fire('Error', err.message, 'error');
+    }
+  }
+
+  // ── Init ──
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarRoles();
+    cargarCargos();
+  });
+</script>
+
+</body>
+</html>

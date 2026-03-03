@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Eventos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link rel="stylesheet" href="css/sweetalert2.min.css">
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.dataTables.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --primary-dark: #0284c7;
+      --primary-light: #e0f2fe;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #94a3b8;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .main-container {
+      height: 100vh;
+      display: flex;
+    }
+
+    .page-content {
+      flex: 1;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    .full-box.navbar-info {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-header-custom {
+      padding: 18px 24px 10px;
+    }
+
+    .page-header-custom h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 2px;
+    }
+
+    .page-header-custom p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px 30px;
+    }
+
+    .scroll-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .scroll-area::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 10px;
+    }
+
+    /* NAV TABS */
+    .nav-tabs-custom {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding-top: 4px;
+    }
+
+    .nav-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: none;
+      transition: all .2s;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    .nav-tab-btn:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      text-decoration: none;
+    }
+
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(14, 165, 233, .3);
+    }
+
+    /* CARDS */
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeUp .35s ease both;
+    }
+
+    .form-card:nth-child(2) {
+      animation-delay: .06s;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1.5px solid var(--border);
+      background: #fafbfc;
+    }
+
+    .icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .icon-box.green {
+      background: #d1fae5;
+      color: var(--success);
+    }
+
+    .form-card-header h6 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0;
+      color: var(--text);
+    }
+
+    .form-card-header small {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+    }
+
+    .form-card-body {
+      padding: 20px;
+    }
+
+    /* INPUTS */
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .field-group input,
+    .field-group select,
+    .field-group textarea {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+
+    .field-group input,
+    .field-group select {
+      height: 42px;
+    }
+
+    .field-group input:focus,
+    .field-group select:focus,
+    .field-group textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, .12);
+    }
+
+    .field-group .hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* BOTONES */
+    .btn-save {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .2s, opacity .2s;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, .35);
+    }
+
+    .btn-save:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(14, 165, 233, .4);
+    }
+
+    .btn-save:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-outline-map {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--success);
+      border: 1.5px solid var(--success);
+      border-radius: 10px;
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+
+    .btn-outline-map:hover {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-edit {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--success);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .btn-edit:hover {
+      background: #059669;
+    }
+
+    .btn-del {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .btn-del:hover {
+      background: #dc2626;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    /* TABLE */
+    #miTabla {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    #miTabla thead th {
+      background: #1e293b !important;
+      color: #fff !important;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 11px 14px;
+      text-align: center;
+      border: none !important;
+    }
+
+    #miTabla thead th:first-child {
+      border-radius: 8px 0 0 8px;
+    }
+
+    #miTabla thead th:last-child {
+      border-radius: 0 8px 8px 0;
+    }
+
+    #miTabla tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+
+    #miTabla tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    #miTabla tbody td {
+      padding: 10px 14px;
+      vertical-align: middle;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .num-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .fecha-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #fef3c7;
+      color: #d97706;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* DataTables overrides */
+    .dataTables_wrapper .dataTables_filter input {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+    }
+
+    .dataTables_wrapper .dataTables_filter input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, .1);
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 5px 10px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      border-radius: 8px !important;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background: var(--primary) !important;
+      color: #fff !important;
+      border: none !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background: var(--primary-light) !important;
+      color: var(--primary) !important;
+      border: none !important;
+    }
+
+    /* MODAL */
+    .modal-content {
+      border-radius: 18px;
+      overflow: hidden;
+      border: none;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .18);
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border: none;
+      padding: 16px 22px;
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .modal-header .close {
+      color: rgba(255, 255, 255, .8);
+      opacity: 1;
+      font-size: 22px;
+    }
+
+    .modal-header .close:hover {
+      color: #fff;
+    }
+
+    .modal-body {
+      padding: 0;
+    }
+
+    #mapaModal {
+      height: 500px;
+      width: 100%;
+    }
+
+    .modal-footer {
+      border-top: 1.5px solid var(--border);
+      padding: 12px 20px;
+    }
+
+    .modal-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: auto;
+    }
+
+    .btn-save-modal {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: opacity .2s;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, .35);
+    }
+
+    .btn-save-modal:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .btn-modal-close {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+
+    .btn-modal-close:hover {
+      border-color: var(--muted);
+    }
+
+    i {
+      transform: none !important;
+      filter: none !important;
+    }
+
+    @media (max-width: 768px) {
+
+      html,
+      body {
+        overflow: auto;
+      }
+
+      .page-content {
+        overflow: auto;
+        height: auto;
+      }
+
+      .scroll-area {
+        overflow: visible;
+      }
+
+      .btn-save,
+      .btn-outline-map {
+        width: 100%;
+        justify-content: center;
+      }
+
+      #mapaModal {
+        height: 320px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="full-box main-container">
+
+    <section class="full-box nav-lateral">
+      <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+      <div class="full-box nav-lateral-content">
+        <figure class="full-box nav-lateral-avatar">
+          <i class="far fa-times-circle show-nav-lateral"></i>
+          <img src="assets/avatar/Avatar2.png" class="img-fluid" alt="Avatar">
+          <figcaption class="roboto-medium text-center">
+            Administrador <br><small class="roboto-condensed-light">Gestión</small>
+          </figcaption>
+        </figure>
+        <nav class="full-box nav-lateral-menu">
+          <ul>
+            <li><a href="dashboard.html"><i class="fab fa-dashcube fa-fw"></i> &nbsp; Dashboard</a></li>
+            <li><a class="active" href="eventos-crear.html"><i class="fas fa-calendar-check fa-fw"></i> &nbsp;
+                Eventos</a></li>
+            <li><a href="eventos-list.html"><i class="fas fa-list fa-fw"></i> &nbsp; Lista de Eventos</a></li>
+            <li><a href="asignaciones.html"><i class="fas fa-bell fa-fw"></i> &nbsp; Asignaciones</a></li>
+          </ul>
+        </nav>
+      </div>
+    </section>
+
+    <section class="full-box page-content">
+      <nav class="full-box navbar-info">
+        <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+        <a href="#" onclick="cerrarSesion()"><i class="fas fa-power-off"></i></a>
+      </nav>
+
+      <div class="page-header-custom">
+        <h3><i class="fas fa-calendar-check fa-fw"></i> &nbsp; Gestión de Eventos</h3>
+        <p>Crea y administra los eventos del sistema.</p>
+      </div>
+
+      <div class="scroll-area">
+
+        <div class="nav-tabs-custom">
+          <a href="eventos-crear.html" class="nav-tab-btn active">
+            <i class="fas fa-plus"></i> Crear Evento
+          </a>
+          <a href="eventos-list.html" class="nav-tab-btn">
+            <i class="fas fa-list"></i> Lista de Eventos
+          </a>
+        </div>
+
+        <!-- CARD FORMULARIO -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="icon-box"><i class="fas fa-calendar-plus"></i></div>
+            <div>
+              <h6>Nuevo Evento</h6>
+              <small>Completa los datos del evento</small>
+            </div>
+          </div>
+          <div class="form-card-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="field-group">
+                  <label>Título</label>
+                  <input type="text" id="ev-titulo" placeholder="Ej: Reunión mensual">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="field-group">
+                  <label>Descripción</label>
+                  <input type="text" id="ev-desc" placeholder="Descripción (opcional)">
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="field-group">
+                  <label>Fecha</label>
+                  <input type="date" id="ev-fecha">
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="field-group">
+                  <label>Hora</label>
+                  <input type="time" id="ev-hora">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="field-group">
+                  <label>Lugar</label>
+                  <select id="ev-lugar">
+                    <option value="">— Selecciona un lugar —</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button class="btn-save" id="ev-crear">
+                <i class="fas fa-save"></i> Crear Evento
+              </button>
+              <button class="btn-outline-map" type="button" data-toggle="modal" data-target="#modalMapa">
+                <i class="fas fa-map-marker-alt"></i> Ver Mapa
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD TABLA -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="icon-box green"><i class="fas fa-list-alt"></i></div>
+            <div>
+              <h6>Eventos Registrados</h6>
+              <small>Lista de todos los eventos creados</small>
+            </div>
+          </div>
+          <div class="form-card-body">
+            <table id="miTabla" style="width:100%">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Título</th>
+                  <th>Descripción</th>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                  <th>Lugar</th>
+                  <th>Editar</th>
+                  <th>Eliminar</th>
+                </tr>
+              </thead>
+              <tbody id="tablaEventos"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL MAPA -->
+  <div class="modal fade" id="modalMapa" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-map-marker-alt"></i> &nbsp; Mapa de Lugares</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="mapaModal"></div>
+        </div>
+        <div class="modal-footer">
+          <span class="modal-hint"><i class="fas fa-info-circle"></i> Haz clic en un marcador para seleccionar el
+            lugar</span>
+          <button type="button" class="btn-modal-close" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL EDITAR -->
+  <div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-edit"></i> &nbsp; Editar Evento</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:20px;">
+          <input type="hidden" id="edit-id">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="field-group">
+                <label>Título</label>
+                <input type="text" id="edit-titulo" placeholder="Título del evento">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="field-group">
+                <label>Descripción</label>
+                <input type="text" id="edit-desc" placeholder="Descripción (opcional)">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="field-group">
+                <label>Fecha</label>
+                <input type="date" id="edit-fecha">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="field-group">
+                <label>Hora</label>
+                <input type="time" id="edit-hora">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="field-group">
+                <label>Lugar</label>
+                <select id="edit-lugar">
+                  <option value="">— Selecciona lugar —</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-close" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn-save-modal" id="btn-guardar-edit">
+            <i class="fas fa-save"></i> Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/jquery-3.4.1.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+  <script src="js/bootstrap-material-design.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/admin-api.js"></script>
+  <script src="js/logout.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+
+  <script>
+    $(document).ready(() => { $('body').bootstrapMaterialDesign(); });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const hoy = new Date().toISOString().split('T')[0];
+      const evTitulo = document.getElementById("ev-titulo");
+      const evFecha = document.getElementById("ev-fecha");
+      evFecha.min = hoy;
+      const evHora = document.getElementById("ev-hora");
+      const evLugar = document.getElementById("ev-lugar");
+      const evDesc = document.getElementById("ev-desc");
+      const btnCrear = document.getElementById("ev-crear");
+      const tablaBody = document.getElementById("tablaEventos");
+
+      let dataTable = null;
+      let mapaLeaflet = null;
+      let marcadorEvento = null;
+      let lugares = [];
+
+      // ── Cargar lugares ──
+      async function cargarLugares() {
+        try {
+          const res = await fetch("/api/lugares", { headers: authHeaders() });
+          lugares = await res.json();
+          evLugar.innerHTML = '<option value="">— Selecciona un lugar —</option>' +
+            lugares.map(l => `<option value="${l.id}" data-lat="${l.latitud || ''}" data-lon="${l.longitud || ''}">${l.nombre}</option>`).join('');
+        } catch (e) { console.error('Error cargando lugares:', e); }
+      }
+
+      // ── Cargar eventos ──
+      async function cargarEventos() {
+        try {
+          const res = await fetch("/api/eventos", { headers: authHeaders() });
+          const eventos = await res.json();
+          if (dataTable) { dataTable.destroy(); }
+          tablaBody.innerHTML = '';
+
+          eventos.forEach((ev, i) => {
+            const fila = document.createElement('tr');
+            const lugarNombre = lugares.find(l => l.id === ev.lugar_id)?.nombre || ev.lugar_id || '-';
+            fila.innerHTML = `
+          <td><span class="num-badge">${i + 1}</span></td>
+          <td><strong>${ev.titulo}</strong></td>
+          <td>${ev.descripcion || '-'}</td>
+          <td><span class="fecha-badge"><i class="fas fa-calendar-alt"></i> ${ev.fecha || '-'}</span></td>
+          <td>${ev.hora || '-'}</td>
+          <td>${lugarNombre}</td>
+          <td>
+            <button class="btn-edit editar-btn" data-id="${ev.id}">
+              <i class="fas fa-pen"></i> Editar
+            </button>
+          </td>
+          <td>
+            <button class="btn-del eliminar-btn" data-id="${ev.id}">
+              <i class="fas fa-trash-alt"></i> Eliminar
+            </button>
+          </td>
+        `;
+            tablaBody.appendChild(fila);
+          });
+
+          dataTable = $('#miTabla').DataTable({
+            destroy: true, paging: true, searching: true, ordering: true, autoWidth: false,
+            language: {
+              search: "Buscar:", lengthMenu: "Mostrar _MENU_ registros",
+              info: "Mostrando _START_ a _END_ de _TOTAL_ eventos",
+              paginate: { previous: "Anterior", next: "Siguiente" }
+            }
+          });
+
+          // Eliminar
+          $('#miTabla tbody').on('click', '.eliminar-btn', async function () {
+            const id = this.dataset.id;
+            const result = await Swal.fire({
+              title: '¿Eliminar este evento?', text: 'Esta acción no se puede deshacer.',
+              icon: 'warning', showCancelButton: true,
+              confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8',
+              confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
+            });
+            if (!result.isConfirmed) return;
+            try {
+              const res = await fetch(`/api/eventos/${id}`, { method: 'DELETE', headers: authHeaders() });
+              if (res.ok) {
+                dataTable.row($(this).parents('tr')).remove().draw();
+                Swal.fire({ title: '¡Eliminado!', icon: 'success', timer: 2000, showConfirmButton: false });
+              } else {
+                Swal.fire({ title: 'Error', text: 'No se pudo eliminar.', icon: 'error', timer: 2000, showConfirmButton: false });
+              }
+            } catch (e) { console.error(e); }
+          });
+
+        } catch (e) { console.error('Error cargando eventos:', e); }
+      }
+      // ── Abrir modal editar ──
+      $('#miTabla tbody').on('click', '.editar-btn', async function () {
+        const id = this.dataset.id;
+        try {
+          const res = await fetch(`/api/eventos/${id}`, { headers: authHeaders() });
+          if (!res.ok) throw new Error('No se pudo cargar');
+          const ev = await res.json();
+
+          document.getElementById('edit-id').value = ev.id;
+          document.getElementById('edit-titulo').value = ev.titulo || '';
+          document.getElementById('edit-desc').value = ev.descripcion || '';
+          document.getElementById('edit-fecha').value = ev.fecha ? ev.fecha.split('T')[0] : '';
+          document.getElementById('edit-hora').value = ev.hora || '';
+
+          // Poblar select lugares
+          const sel = document.getElementById('edit-lugar');
+          sel.innerHTML = '<option value="">— Selecciona lugar —</option>' +
+            lugares.map(l =>
+              `<option value="${l.id}" ${l.id == ev.lugar_id ? 'selected' : ''}>${l.nombre}</option>`
+            ).join('');
+
+          $('#modalEditar').modal('show');
+        } catch (e) {
+          Swal.fire('Error', 'No se pudo cargar el evento', 'error');
+        }
+      });
+
+      // ── Guardar edición ──
+      document.getElementById('btn-guardar-edit').addEventListener('click', async () => {
+        const id = document.getElementById('edit-id').value;
+        const payload = {
+          titulo: document.getElementById('edit-titulo').value.trim(),
+          descripcion: document.getElementById('edit-desc').value.trim() || null,
+          fecha: document.getElementById('edit-fecha').value || null,
+          hora: document.getElementById('edit-hora').value || null,
+          lugar_id: document.getElementById('edit-lugar').value
+            ? Number(document.getElementById('edit-lugar').value) : null
+        };
+
+        if (!payload.titulo || !payload.fecha) {
+          Swal.fire('Campos incompletos', 'Título y fecha son obligatorios.', 'warning');
+          return;
+        }
+
+        const btn = document.getElementById('btn-guardar-edit');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+        try {
+          const res = await fetch(`/api/eventos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) throw new Error((await res.json()).error || 'Error al actualizar');
+
+          $('#modalEditar').modal('hide');
+          Swal.fire({ title: '¡Actualizado!', icon: 'success', timer: 2000, showConfirmButton: false });
+          cargarEventos();
+        } catch (err) {
+          Swal.fire('Error', err.message, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+        }
+      });
+      // ── Crear evento ──
+      btnCrear.addEventListener('click', async () => {
+        const payload = {
+          titulo: evTitulo.value.trim(),
+          descripcion: evDesc.value.trim() || null,
+          fecha: evFecha.value || null,
+          hora: evHora.value || null,
+          lugar_id: evLugar.value ? Number(evLugar.value) : null
+        };
+
+        if (!payload.titulo || !payload.fecha) {
+          Swal.fire('Campos incompletos', 'Título y fecha son obligatorios.', 'warning');
+          return;
+        }
+
+        btnCrear.disabled = true;
+        btnCrear.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+        try {
+          const res = await fetch('/api/eventos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) throw new Error((await res.json()).error || 'Error al crear');
+
+          Swal.fire({ title: '¡Evento creado!', icon: 'success', timer: 2000, showConfirmButton: false });
+          evTitulo.value = ''; evDesc.value = ''; evFecha.value = ''; evHora.value = ''; evLugar.value = '';
+          cargarEventos();
+        } catch (err) {
+          Swal.fire('Error', err.message, 'error');
+        } finally {
+          btnCrear.disabled = false;
+          btnCrear.innerHTML = '<i class="fas fa-save"></i> Crear Evento';
+        }
+      });
+
+      // ── Mapa ──
+      $('#modalMapa').on('shown.bs.modal', () => {
+        if (!mapaLeaflet) {
+          mapaLeaflet = L.map('mapaModal').setView([-0.22985, -78.52495], 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapaLeaflet);
+        }
+
+        // Limpiar marcador anterior
+        if (marcadorEvento) {
+          mapaLeaflet.removeLayer(marcadorEvento);
+          marcadorEvento = null;
+        }
+
+        // Pintar solo el lugar seleccionado
+        const lugarId = Number(evLugar.value);
+        const lugar = lugares.find(l => l.id === lugarId);
+
+        if (lugar && lugar.latitud && lugar.longitud) {
+          const lat = parseFloat(lugar.latitud);
+          const lng = parseFloat(lugar.longitud);
+          marcadorEvento = L.marker([lat, lng])
+            .addTo(mapaLeaflet)
+            .bindPopup(`<strong>${lugar.nombre}</strong>`)
+            .openPopup();
+          mapaLeaflet.setView([lat, lng], 16);
+        } else {
+          // Si no hay lugar seleccionado, vista por defecto
+          mapaLeaflet.setView([-0.22985, -78.52495], 13);
+        }
+
+        mapaLeaflet.invalidateSize();
+      });
+      // ── Init ──
+      await cargarLugares();
+      await cargarEventos();
+    });
+  </script>
+</body>
+
+</html>

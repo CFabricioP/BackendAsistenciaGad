@@ -1,0 +1,55 @@
+# ======================
+# NODE
+# ======================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ======================
+# ENV
+# ======================
+.env
+.env.*
+!.env.example
+
+# ======================
+# LOGS
+# ======================
+logs/
+*.log
+
+# ======================
+# BUILD
+# ======================
+dist/
+build/
+
+# ======================
+# OS FILES
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# IDE
+# ======================
+.vscode/
+.idea/
+
+# ======================
+# TEST COVERAGE
+# ======================
+coverage/
+
+# ======================
+# DATABASE FILES (si usas sqlite)
+# ======================
+*.sqlite
+*.sqlite3
+
+# ======================
+# FIREBASE CREDENTIALS
+# ======================
+serviceAccount.json

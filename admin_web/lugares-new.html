@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Lugares</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="./css/normalize.css">
+  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <link rel="stylesheet" href="./css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="./css/all.css">
+  <link rel="stylesheet" href="./css/sweetalert2.min.css">
+  <link rel="stylesheet" href="./css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --primary-dark: #0284c7;
+      --primary-light: #e0f2fe;
+      --success: #10b981;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #94a3b8;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    #zoom-root {
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .main-container {
+      height: 100vh;
+      display: flex;
+    }
+
+    .page-content {
+      flex: 1;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    .full-box.navbar-info {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-header-custom {
+      padding: 18px 24px 10px;
+    }
+
+    .page-header-custom h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0 0 2px;
+    }
+
+    .page-header-custom p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 24px 30px;
+    }
+
+    .scroll-area::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .scroll-area::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 10px;
+    }
+
+    .stepper {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding-top: 4px;
+    }
+
+    .step {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .step.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, .1);
+    }
+
+    .step-num {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background .2s, color .2s;
+    }
+
+    .step.active .step-num {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .step-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .step.active .step-label {
+      color: var(--primary);
+    }
+
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeUp .35s ease both;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-card:nth-child(2) {
+      animation-delay: .06s;
+    }
+
+    .form-card:nth-child(3) {
+      animation-delay: .12s;
+    }
+
+    .form-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1.5px solid var(--border);
+      background: #fafbfc;
+    }
+
+    .form-card-header .icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .form-card-header h6 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0;
+      color: var(--text);
+    }
+
+    .form-card-header small {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+    }
+
+    .form-card-body {
+      padding: 20px;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .field-group input {
+      width: 100%;
+      height: 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0 14px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+
+    .field-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, .12);
+    }
+
+    .location-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-open-map {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 14px rgba(14, 165, 233, .35);
+    }
+
+    .btn-open-map:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .coords-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all .3s;
+      background: var(--primary-light);
+      border: 1.5px solid var(--primary);
+      color: var(--primary-dark);
+    }
+
+    .coords-badge.empty {
+      background: var(--bg);
+      border-color: var(--border);
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .btn-save {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 13px 36px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .2s;
+      box-shadow: 0 6px 20px rgba(14, 165, 233, .4);
+    }
+
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(14, 165, 233, .45);
+    }
+
+    .btn-cancel {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color .2s, color .2s;
+    }
+
+    .btn-cancel:hover {
+      border-color: var(--muted);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .action-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    /* MODAL */
+    .modal-content {
+      border-radius: 18px;
+      overflow: hidden;
+      border: none;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .18);
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border: none;
+      padding: 16px 22px;
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .modal-header .close {
+      color: rgba(255, 255, 255, .8);
+      opacity: 1;
+      font-size: 22px;
+    }
+
+    .modal-header .close:hover {
+      color: #fff;
+    }
+
+    .modal-body {
+      padding: 0;
+    }
+
+    /* Barra búsqueda por coordenadas */
+    .coords-.coords-search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-bottom: 1.5px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .coords-search-bar label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      white-space: nowrap;
+      margin: 0;
+      line-height: 36px;
+      /* 👈 misma altura que los inputs */
+    }
+
+    .coords-search-bar input {
+      height: 36px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0 10px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      outline: none;
+      width: 170px;
+      transition: border-color .2s, box-shadow .2s;
+      vertical-align: middle;
+      /* 👈 alineación */
+    }
+
+    .coords-search-bar input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, .1);
+    }
+
+    .btn-ir {
+      height: 36px;
+      /* 👈 misma altura que los inputs */
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--success);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0 16px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap;
+    }
+
+    .btn-ir:hover {
+      background: #059669;
+    }
+
+    #mapaModal {
+      height: 450px;
+      width: 100%;
+    }
+
+    .modal-footer {
+      border-top: 1.5px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .modal-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: auto;
+    }
+
+    .btn-modal-close {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      margin-right: 8px;
+      transition: border-color .2s;
+    }
+
+    .btn-modal-close:hover {
+      border-color: var(--muted);
+    }
+
+    .btn-modal-confirm {
+      background: var(--success);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      opacity: .45;
+      pointer-events: none;
+      transition: background .2s, opacity .2s;
+    }
+
+    .btn-modal-confirm.ready {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .btn-modal-confirm.ready:hover {
+      background: #059669;
+    }
+
+    /* GEOCODER */
+    .leaflet-control-geocoder {
+      border-radius: 10px !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+      border: 1.5px solid var(--border) !important;
+    }
+
+    .leaflet-control-geocoder-form input {
+      font-family: 'DM Sans', sans-serif !important;
+      font-size: 13px !important;
+      padding: 8px 12px !important;
+      border-radius: 8px !important;
+      border: none !important;
+      outline: none !important;
+      width: 220px !important;
+    }
+
+    .leaflet-control-geocoder-alternatives {
+      border-radius: 0 0 10px 10px !important;
+      border-top: 1px solid var(--border) !important;
+    }
+
+    .leaflet-control-geocoder-alternatives li a {
+      font-family: 'DM Sans', sans-serif !important;
+      font-size: 12px !important;
+      padding: 8px 12px !important;
+    }
+
+    i {
+      transform: none !important;
+      filter: none !important;
+    }
+
+    @media (max-width: 768px) {
+
+      html,
+      body {
+        overflow: auto;
+      }
+
+      .page-content {
+        overflow: auto;
+        height: auto;
+      }
+
+      .scroll-area {
+        overflow: visible;
+      }
+
+      .stepper {
+        flex-direction: column;
+      }
+
+      #mapaModal {
+        height: 300px;
+      }
+
+      .action-row {
+        flex-direction: column;
+      }
+
+      .btn-save,
+      .btn-cancel {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .coords-search-bar input {
+        width: 120px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="zoom-root">
+    <main class="full-box main-container">
+
+      <section class="full-box nav-lateral">
+        <div class="full-box nav-lateral-bg show-nav-lateral"></div>
+        <div class="full-box nav-lateral-content">
+          <figure class="full-box nav-lateral-avatar">
+            <i class="far fa-times-circle show-nav-lateral"></i>
+            <img src="./assets/avatar/Avatar2.png" class="img-fluid" alt="Avatar">
+            <figcaption class="roboto-medium text-center">
+              Administrador <br><small class="roboto-condensed-light">Gestión</small>
+            </figcaption>
+          </figure>
+          <nav class="full-box nav-lateral-menu">
+            <ul>
+              <li><a href="dashboard.html"><i class="fab fa-dashcube fa-fw"></i> &nbsp; Dashboard</a></li>
+              <li><a href="lugares-new.html" class="active"><i class="fas fa-plus fa-fw"></i> &nbsp; Agregar Lugar</a>
+              </li>
+              <li><a href="lugares-list.html"><i class="fas fa-list fa-fw"></i> &nbsp; Lista de Lugares</a></li>
+            </ul>
+          </nav>
+        </div>
+      </section>
+
+      <section class="full-box page-content">
+        <nav class="full-box navbar-info">
+          <a href="#" class="float-left show-nav-lateral"><i class="fas fa-exchange-alt"></i></a>
+          <a href="#" onclick="cerrarSesion()"><i class="fas fa-power-off"></i></a>
+        </nav>
+
+        <div class="page-header-custom">
+          <h3><i class="fas fa-map-marked-alt fa-fw"></i> &nbsp; Gestión de Lugares</h3>
+          <p>Registra y administra los lugares de trabajo con su ubicación exacta.</p>
+        </div>
+
+        <div class="scroll-area">
+          <div class="stepper">
+            <div class="step active" id="step1">
+              <div class="step-num">1</div>
+              <div>
+                <div class="step-label">Información</div>
+              </div>
+            </div>
+            <div class="step" id="step2">
+              <div class="step-num">2</div>
+              <div>
+                <div class="step-label">Ubicación</div>
+              </div>
+            </div>
+            <div class="step" id="step3">
+              <div class="step-num">3</div>
+              <div>
+                <div class="step-label">Guardar</div>
+              </div>
+            </div>
+          </div>
+
+          <form id="formLugar">
+
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="icon-box"><i class="fas fa-tag"></i></div>
+                <div>
+                  <h6>Datos del Lugar</h6><small>Nombre, dirección y radio de cobertura</small>
+                </div>
+              </div>
+              <div class="form-card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label>Nombre del lugar</label>
+                      <input type="text" id="nombreLugar" placeholder="Ej: Oficina Central" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="field-group">
+                      <label>Dirección / Referencia</label>
+                      <input type="text" id="direccion" placeholder="Ej: Av. Principal 123" required>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="field-group">
+                      <label>Radio de cobertura (metros)</label>
+                      <input type="number" id="radio" value="10" min="1" required>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="icon-box"><i class="fas fa-map-pin"></i></div>
+                <div>
+                  <h6>Ubicación en el Mapa</h6><small>Busca por nombre, coordenadas o haz clic en el mapa</small>
+                </div>
+              </div>
+              <div class="form-card-body">
+                <div class="location-row">
+                  <button type="button" class="btn-open-map" data-toggle="modal" data-target="#modalMapa">
+                    <i class="fas fa-map-marked-alt"></i> Abrir Mapa
+                  </button>
+                  <div class="coords-badge empty" id="coordsDisplay">
+                    <i class="fas fa-crosshairs"></i>
+                    <span>Sin ubicación seleccionada</span>
+                  </div>
+                </div>
+                <input type="hidden" id="latitud">
+                <input type="hidden" id="longitud">
+              </div>
+            </div>
+
+            <div class="form-card">
+              <div class="form-card-header">
+                <div class="icon-box"><i class="fas fa-check-circle"></i></div>
+                <div>
+                  <h6>Confirmar y Guardar</h6><small>Revisa los datos antes de guardar</small>
+                </div>
+              </div>
+              <div class="form-card-body">
+                <div class="action-row">
+                  <a href="lugares-list.html" class="btn-cancel"><i class="fas fa-arrow-left"></i> Cancelar</a>
+                  <button type="submit" class="btn-save"><i class="fas fa-save"></i> Guardar Lugar</button>
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL MAPA -->
+  <div class="modal fade" id="modalMapa" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-map-marker-alt"></i> &nbsp; Seleccionar Ubicación</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="mapaModal"></div>
+        </div>
+        <!-- ── Barra búsqueda por coordenadas ── -->
+        <div class="coords-search-bar">
+          <label><i class="fas fa-crosshairs"></i> Ir a coordenadas:</label>
+          <input type="text" id="inputBuscarLat" placeholder="Latitud  Ej: -0.18070">
+          <input type="text" id="inputBuscarLng" placeholder="Longitud  Ej: -78.46780">
+          <button type="button" class="btn-ir" id="btnIrCoords">
+            <i class="fas fa-location-arrow"></i> Ir
+          </button>
+        </div>
+        <div class="modal-footer">
+          <span class="modal-hint"><i class="fas fa-info-circle"></i> Busca por nombre (buscador del mapa), por
+            coordenadas o haz clic directo</span>
+          <button type="button" class="btn-modal-close" data-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn-modal-confirm" id="btnConfirmar">
+            <i class="fas fa-check"></i> &nbsp; Confirmar Ubicación
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/jquery-3.4.1.min.js"></script>
+  <script src="./js/popper.min.js"></script>
+  <script src="./js/bootstrap.min.js"></script>
+  <script src="./js/jquery.mCustomScrollbar.concat.min.js"></script>
+  <script src="./js/bootstrap-material-design.min.js"></script>
+  <script src="./js/main.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+  <script src="js/logout.js"></script>
+  <script src="js/admin-api.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      $('body').bootstrapMaterialDesign();
+
+      const nombreInput = document.getElementById('nombreLugar');
+      const direccionInput = document.getElementById('direccion');
+      const latitudInput = document.getElementById('latitud');
+      const longitudInput = document.getElementById('longitud');
+      const radioInput = document.getElementById('radio');
+      const coordsDisplay = document.getElementById('coordsDisplay');
+      const btnConfirmar = document.getElementById('btnConfirmar');
+
+      let map = null, marker = null, circle = null;
+      let tempLat = null, tempLng = null;
+
+      function setStep(n) {
+        ['step1', 'step2', 'step3'].forEach((id, i) => {
+          document.getElementById(id).classList.toggle('active', i < n);
+        });
+      }
+      // Solo números en inputs de coordenadas
+      ['inputBuscarLat', 'inputBuscarLng'].forEach(id => {
+        document.getElementById(id).addEventListener('input', function () {
+          this.value = this.value.replace(/[^0-9.\-]/g, '');
+        });
+      });
+      function pintarMarcador(lat, lng) {
+        const r = parseInt(radioInput.value) || 10;
+        if (marker) map.removeLayer(marker);
+        if (circle) map.removeLayer(circle);
+        marker = L.marker([lat, lng]).addTo(map);
+        circle = L.circle([lat, lng], { radius: r, color: '#0ea5e9', fillColor: '#0ea5e9', fillOpacity: 0.15 }).addTo(map);
+      }
+
+      $('#modalMapa').on('shown.bs.modal', function () {
+        if (!map) {
+          map = L.map('mapaModal').setView([-0.1807, -78.4678], 13);
+
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(map);
+
+          // ── Buscador por nombre ──
+          L.Control.geocoder({
+            defaultMarkGeocode: false,
+            placeholder: '🔍 Buscar lugar...',
+            collapsed: false,
+            geocoder: new L.Control.Geocoder.Nominatim({
+              serviceUrl: `${window.location.origin}/api/lugares/nominatim/`
+            })
+          })
+            .on('markgeocode', function (e) {
+              const { center, name } = e.geocode;
+              tempLat = center.lat;
+              tempLng = center.lng;
+              pintarMarcador(center.lat, center.lng);
+              map.setView(center, 16);
+              btnConfirmar.classList.add('ready');
+              if (name) {
+                const partes = name.split(',');
+                nombreInput.value = partes[0].trim();
+                direccionInput.value = name.trim();
+              }
+            })
+            .addTo(map);
+
+          // ── Clic en el mapa ──
+          map.on('click', async function (e) {
+            const { lat, lng } = e.latlng;
+            tempLat = lat; tempLng = lng;
+            pintarMarcador(lat, lng);
+            btnConfirmar.classList.add('ready');
+            try {
+              const res = await fetch(`/api/lugares/nominatim?lat=${lat}&lon=${lng}`, { headers: authHeaders() });
+              const data = await res.json();
+              if (data.name) nombreInput.value = data.name;
+              if (data.display_name) direccionInput.value = data.display_name;
+            } catch (e) { console.warn('Nominatim error', e); }
+          });
+
+        } else {
+          map.invalidateSize();
+        }
+
+        if (latitudInput.value && longitudInput.value) {
+          const lat = parseFloat(latitudInput.value);
+          const lng = parseFloat(longitudInput.value);
+          tempLat = lat; tempLng = lng;
+          pintarMarcador(lat, lng);
+          map.setView([lat, lng], 15);
+          btnConfirmar.classList.add('ready');
+        }
+      });
+
+      // ── Ir por coordenadas ──
+      document.getElementById('btnIrCoords').addEventListener('click', function () {
+        const lat = parseFloat(document.getElementById('inputBuscarLat').value);
+        const lng = parseFloat(document.getElementById('inputBuscarLng').value);
+
+        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+          Swal.fire('Coordenadas inválidas', 'Ingresa latitud (-90 a 90) y longitud (-180 a 180) válidas.', 'warning');
+          return;
+        }
+
+        tempLat = lat; tempLng = lng;
+        pintarMarcador(lat, lng);
+        map.setView([lat, lng], 17);
+        btnConfirmar.classList.add('ready');
+
+        document.getElementById('inputBuscarLat').value = '';
+        document.getElementById('inputBuscarLng').value = '';
+      });
+
+      // ── Confirmar ubicación ──
+      btnConfirmar.addEventListener('click', function () {
+        if (tempLat === null) return;
+        latitudInput.value = tempLat.toFixed(6);
+        longitudInput.value = tempLng.toFixed(6);
+        coordsDisplay.classList.remove('empty');
+        coordsDisplay.innerHTML = `<i class="fas fa-map-pin"></i> <span>${tempLat.toFixed(5)}, ${tempLng.toFixed(5)}</span>`;
+        $('#modalMapa').modal('hide');
+        setStep(2);
+      });
+
+      // ── Guardar ──
+      document.getElementById('formLugar').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setStep(3);
+
+        if (!latitudInput.value || !longitudInput.value) {
+          Swal.fire({ title: 'Falta ubicación', text: 'Abre el mapa y selecciona la ubicación antes de guardar.', icon: 'warning', timer: 2500, showConfirmButton: false });
+          return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        const body = {
+          nombre: nombreInput.value,
+          direccion: direccionInput.value,
+          latitud: latitudInput.value,
+          longitud: longitudInput.value,
+          radio: parseInt(radioInput.value) || 10
+        };
+
+        try {
+          const res = await fetch(id ? `/api/lugares/${id}` : '/api/lugares', {
+            method: id ? 'PUT' : 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify(body)
+          });
+
+          if (res.ok) {
+            Swal.fire({ title: '¡Guardado!', text: 'El lugar ha sido registrado correctamente.', icon: 'success', timer: 2000, showConfirmButton: false })
+              .then(() => { window.location.href = 'lugares-list.html'; });
+          } else {
+            const err = await res.json();
+            Swal.fire({ title: 'Error', text: err.error || 'Error al guardar.', icon: 'error', timer: 2000, showConfirmButton: false });
+          }
+        } catch (err) {
+          Swal.fire({ title: 'Error', text: 'Error al conectar con el servidor.', icon: 'error', timer: 2000, showConfirmButton: false });
+        }
+      });
+
+      // ── Cargar si es edición ──
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      if (id) {
+        fetch('/api/lugares', { headers: authHeaders() })
+          .then(r => r.json())
+          .then(lugares => {
+            const lugar = lugares.find(l => l.id == id);
+            if (!lugar) return;
+            nombreInput.value = lugar.nombre;
+            direccionInput.value = lugar.direccion;
+            latitudInput.value = parseFloat(lugar.latitud).toFixed(6);
+            longitudInput.value = parseFloat(lugar.longitud).toFixed(6);
+            radioInput.value = lugar.radio || 10;
+            tempLat = parseFloat(lugar.latitud);
+            tempLng = parseFloat(lugar.longitud);
+            coordsDisplay.classList.remove('empty');
+            coordsDisplay.innerHTML = `<i class="fas fa-map-pin"></i> <span>${latitudInput.value}, ${longitudInput.value}</span>`;
+            setStep(2);
+          })
+          .catch(err => console.error("Error al cargar lugar:", err));
+      }
+
+      $(document).on('click', '.show-nav-lateral', function () {
+        setTimeout(() => { if (map) map.invalidateSize(); }, 220);
+      });
+    });
+  </script>
+</body>
+
+</html>

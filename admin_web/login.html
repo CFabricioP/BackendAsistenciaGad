@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAD Municipal de Cotacachi | Login</title>
+
+  <!-- Estilos generales -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+  <link rel="stylesheet" href="css/all.css">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/jquery.mCustomScrollbar.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Fuente -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-0: #0B1220;
+      --bg-1: #0E1B33;
+      --primary: #1D4ED8;
+      --primary-2: #2563EB;
+      --accent: #F59E0B;
+      --accent-2: #FB923C;
+
+      --card: rgba(255, 255, 255, .08);
+      --border: rgba(255, 255, 255, .16);
+      --text: #E5E7EB;
+      --muted: #A9B2C3;
+      --input-bg: rgba(0, 0, 0, .25);
+      --shadow: 0 20px 60px rgba(0, 0, 0, .45);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --font: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    body.login-glass {
+      font-family: var(--font);
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      overflow: hidden;
+      background:
+        radial-gradient(1200px 700px at 18% 20%, rgba(37, 99, 235, .35), transparent 60%),
+        radial-gradient(900px 600px at 82% 78%, rgba(245, 158, 11, .26), transparent 55%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-0));
+    }
+
+    .glass-background {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glass-background::before {
+      content: "";
+      position: absolute;
+      left: -12%;
+      bottom: -25%;
+      width: 124%;
+      height: 74%;
+      background:
+        radial-gradient(120% 80% at 22% 78%, rgba(17, 24, 39, .92), rgba(17, 24, 39, 0) 65%),
+        radial-gradient(120% 80% at 58% 70%, rgba(15, 23, 42, .92), rgba(15, 23, 42, 0) 62%),
+        radial-gradient(120% 80% at 90% 86%, rgba(2, 6, 23, .88), rgba(2, 6, 23, 0) 60%);
+    }
+
+    .glass-background::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, .06) 1px, transparent 1px);
+      background-size: 26px 26px;
+      opacity: .22;
+      mask-image: radial-gradient(800px 500px at 60% 30%, black 40%, transparent 70%);
+    }
+
+    .shape {
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      filter: blur(0px);
+      opacity: .95;
+    }
+
+    .shape-1 {
+      top: 9%;
+      left: 12%;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, .25), transparent 60%),
+        linear-gradient(135deg, rgba(29, 78, 216, .95), rgba(59, 130, 246, .55));
+      box-shadow: 0 30px 90px rgba(29, 78, 216, .25);
+    }
+
+    .shape-2 {
+      bottom: 10%;
+      right: 14%;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, .20), transparent 60%),
+        linear-gradient(135deg, rgba(245, 158, 11, .95), rgba(251, 146, 60, .58));
+      box-shadow: 0 30px 90px rgba(245, 158, 11, .20);
+    }
+
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-content {
+      width: 100%;
+      max-width: 440px;
+      padding: 26px 26px 20px;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+
+    /* =============================================
+       ✅ CAMBIO: brand-row ahora centra el logo
+       ============================================= */
+    .brand-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    /* Contenedor del logo con fondo blanco redondeado
+       para que resalte sobre el fondo oscuro */
+    .logo-wrapper {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .35);
+      border: 1px solid rgba(255, 255, 255, .20);
+    }
+
+    .logo-wrapper img {
+      width: 190px;
+      height: auto;
+      display: block;
+    }
+
+    .brand-text {
+      text-align: center;
+    }
+
+    .brand-text h6 {
+      margin: 0;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: .2px;
+      color: #fff;
+    }
+
+    .brand-text p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: rgba(229, 231, 235, .75);
+    }
+    /* ============================================= */
+
+    .login-avatar {
+      text-align: center;
+      margin: 12px 0 6px;
+    }
+
+    .login-avatar .avatar-icon {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(60% 60% at 30% 30%, rgba(255, 255, 255, .20), transparent 60%),
+        linear-gradient(135deg, rgba(245, 158, 11, .85), rgba(29, 78, 216, .65));
+      border: 1px solid rgba(255, 255, 255, .16);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, .25);
+    }
+
+    .login-avatar i {
+      font-size: 28px;
+      color: rgba(255, 255, 255, .92);
+    }
+
+    .login-title {
+      text-align: center;
+      font-weight: 800;
+      color: #fff;
+      margin: 8px 0 0;
+      font-size: 16px;
+    }
+
+    .login-subtitle {
+      text-align: center;
+      margin: 6px 0 18px;
+      color: rgba(229, 231, 235, .72);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, .78);
+      margin: 0 0 6px 6px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap .input-icon {
+      position: absolute;
+      left: 16px !important;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, .90);
+      opacity: .8;
+      pointer-events: none;
+      font-size: 15px;
+    }
+
+    .login-glass .input-wrap .form-control {
+      height: 48px !important;
+      padding-left: 52px !important;
+      padding-right: 92px !important;
+      border-radius: var(--radius-sm) !important;
+      border: 1px solid rgba(255, 255, 255, .16) !important;
+      background: var(--input-bg) !important;
+      color: #fff !important;
+      line-height: 48px !important;
+    }
+
+    .login-glass .input-wrap .form-control::placeholder {
+      color: rgba(255, 255, 255, .45) !important;
+    }
+
+    .login-glass .input-wrap .form-control:focus {
+      border-color: rgba(37, 99, 235, .75) !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .18) !important;
+    }
+
+    .field-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, .92);
+      background: rgba(255, 255, 255, .08);
+      transition: .15s ease;
+    }
+
+    .field-btn:hover {
+      background: rgba(255, 255, 255, .12);
+    }
+
+    .btn-clear {
+      right: 48px;
+    }
+
+    .btn-eye {
+      right: 8px;
+    }
+
+    .row-mini {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 6px 0 10px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: rgba(229, 231, 235, .78);
+      user-select: none;
+    }
+
+    .check input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--primary);
+    }
+
+    .link {
+      font-size: 12px;
+      color: rgba(147, 197, 253, .95);
+      text-decoration: none;
+    }
+
+    .link:hover {
+      text-decoration: underline;
+    }
+
+    .btn-login {
+      height: 46px;
+      border-radius: 14px;
+      font-weight: 800;
+      letter-spacing: .4px;
+      width: 100%;
+      border: 0;
+      cursor: pointer;
+      color: #fff;
+      /* Rojo Cotacachi → Azul marino Cotacachi */
+      background: linear-gradient(135deg, #C0272D 0%, #1B2A4A 100%);
+      box-shadow: 0 16px 34px rgba(192, 39, 45, .30);
+      transition: transform .08s ease, filter .15s ease;
+    }
+
+    .btn-login:active {
+      transform: translateY(1px);
+    }
+
+    .btn-login:hover {
+      filter: brightness(1.10);
+    }
+
+    .error-message {
+      font-size: 13px;
+      min-height: 18px;
+      margin: 10px 0 0;
+      text-align: center;
+      color: rgba(229, 231, 235, .80);
+    }
+
+    .error-message.error {
+      color: #FCA5A5;
+    }
+
+    .error-message.ok {
+      color: #86EFAC !important;
+    }
+
+    .footer {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, .12);
+      color: rgba(229, 231, 235, .62);
+      font-size: 11px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, .35);
+      border-top-color: #fff;
+      animation: spin .7s linear infinite;
+      vertical-align: -2px;
+      margin-right: 6px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .login-content {
+        padding: 22px 18px 18px;
+      }
+
+      .shape {
+        width: 170px;
+        height: 170px;
+      }
+
+      body.login-glass {
+        overflow: auto;
+      }
+
+      .logo-wrapper img {
+        width: 155px;
+      }
+    }
+  </style>
+</head>
+
+<body class="login-glass">
+
+  <!-- Fondo decorativo -->
+  <div class="glass-background" aria-hidden="true"></div>
+  <div class="shape shape-1" aria-hidden="true"></div>
+  <div class="shape shape-2" aria-hidden="true"></div>
+
+  <!-- LOGIN -->
+  <div class="login-container">
+    <div class="login-content">
+
+      <!-- ✅ CAMBIO: Logo del GAD Cotacachi en lugar del cuadro "GC" -->
+      <div class="brand-row">
+        <div class="logo-wrapper">
+          <img src="assets/img/logotipoGad.jpeg" alt="GAD Municipal de Cotacachi" />
+        </div>
+      </div>
+
+      <div class="login-title">Inicia sesión con tu cuenta</div>
+      <div class="login-subtitle">
+        Usa tu <b>cédula</b> y contraseña asignada para registrar asistencia, consultar reportes y administrar el
+        sistema.
+      </div>
+
+      <form id="loginForm" autocomplete="on">
+
+        <!-- CÉDULA -->
+        <div class="form-group">
+          <span class="form-label">Cédula</span>
+          <div class="input-wrap">
+            <i class="fas fa-id-card input-icon"></i>
+            <input type="text" class="form-control" id="cedula" placeholder="Ej: 1002003004" minlength="10"
+              maxlength="10" inputmode="numeric" autocomplete="username" required>
+            <button class="field-btn btn-clear" type="button" id="clearCedula" title="Limpiar">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- CONTRASEÑA -->
+        <div class="form-group">
+          <span class="form-label">Contraseña</span>
+          <div class="input-wrap">
+            <i class="fas fa-key input-icon"></i>
+            <input type="password" class="form-control" id="password" placeholder="Tu contraseña"
+              autocomplete="current-password" required>
+            <button class="field-btn btn-eye" type="button" id="togglePass" title="Ver/Ocultar">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- RECORDARME -->
+        <div class="row-mini">
+          <label class="check">
+            <input type="checkbox" id="remember">
+            Recordarme
+          </label>
+        </div>
+
+        <button type="submit" class="btn-login" id="btnLogin">
+          INICIAR SESIÓN
+        </button>
+
+        <p id="mensajeError" style="text-align:center; margin-top:10px; font-weight:bold; min-height:18px;"></p>
+
+        <div class="footer">
+          © <span id="year"></span> GAD Municipal de Cotacachi • Acceso solo a personal autorizado.
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="js/jquery-3.4.1.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/bootstrap-material-design.min.js"></script>
+  <script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.20/dist/sweetalert2.all.min.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    const loginForm = document.getElementById("loginForm");
+    const cedula = document.getElementById("cedula");
+    const password = document.getElementById("password");
+    const mensajeError = document.getElementById("mensajeError");
+    const remember = document.getElementById("remember");
+    const btnLogin = document.getElementById("btnLogin");
+    const togglePass = document.getElementById("togglePass");
+    const clearCedula = document.getElementById("clearCedula");
+
+    const savedCedula = localStorage.getItem("rememberCedula");
+    if (savedCedula) {
+      cedula.value = savedCedula;
+      remember.checked = true;
+    }
+
+    cedula.addEventListener("input", () => {
+      cedula.value = cedula.value.replace(/\D/g, "").slice(0, 10);
+    });
+
+    clearCedula.addEventListener("click", () => {
+      cedula.value = "";
+      cedula.focus();
+    });
+
+    togglePass.addEventListener("click", () => {
+      const isPass = password.type === "password";
+      password.type = isPass ? "text" : "password";
+      togglePass.innerHTML = isPass
+        ? '<i class="fas fa-eye-slash"></i>'
+        : '<i class="fas fa-eye"></i>';
+    });
+
+    function setMsg(text, type) {
+      if (type === 'error') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: text,
+          background: '#1e293b',
+          color: '#fff',
+          confirmButtonColor: '#1D4ED8'
+        });
+      } else if (type === 'ok') {
+        mensajeError.textContent = text;
+        mensajeError.style.color = '#86EFAC';
+        mensajeError.style.fontWeight = 'bold';
+        mensajeError.style.textAlign = 'center';
+      } else {
+        mensajeError.textContent = '';
+        mensajeError.style.color = '';
+      }
+    }
+
+    function validarCedulaBasica(value) {
+      return /^\d{10}$/.test(value);
+    }
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        btnLogin.disabled = true;
+        btnLogin.innerHTML = '<span class="spinner"></span> Verificando...';
+      } else {
+        btnLogin.disabled = false;
+        btnLogin.textContent = 'INICIAR SESIÓN';
+      }
+    }
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setMsg("", "");
+      const c = cedula.value.trim();
+      const p = password.value;
+
+      if (!validarCedulaBasica(c)) {
+        setMsg("La cédula debe tener 10 dígitos.", "error");
+        return;
+      }
+      if (!p || p.length < 4) {
+        setMsg("Ingresa una contraseña válida.", "error");
+        return;
+      }
+
+      if (remember.checked) localStorage.setItem("rememberCedula", c);
+      else localStorage.removeItem("rememberCedula");
+
+      setLoading(true);
+
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cedula: c, password: p })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(data.error || "Credenciales incorrectas");
+        }
+
+        if (data.rol?.toLowerCase().trim() !== 'admin') {
+          throw new Error("Acceso denegado: No tienes permisos de administrador.");
+        }
+
+        if (data.token) localStorage.setItem("token", data.token);
+        if (data.empleado) localStorage.setItem("usuario", JSON.stringify(data.empleado));
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Bienvenido!',
+          text: `Bienvenido ${data.empleado?.nombre || ''}`,
+          background: '#1e293b',
+          color: '#fff',
+          confirmButtonColor: '#1D4ED8',
+          timer: 1500,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = "dashboard.html";
+        });
+
+      } catch (err) {
+        setMsg(err.message || "No se pudo iniciar sesión.", "error");
+      } finally {
+        setLoading(false);
+      }
+    });
+  </script>
+</body>
+
+</html>
